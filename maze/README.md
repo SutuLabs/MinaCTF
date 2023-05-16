@@ -1,6 +1,6 @@
-# Mina zkApp: Tictactoe
+# Mina zkApp: Maze
 
-This template uses TypeScript.
+
 
 ## How to build
 
