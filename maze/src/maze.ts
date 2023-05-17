@@ -25,14 +25,9 @@ class Maze {
 
   constructor(maze: Field, position: Field, end: Field) {
     this.maze = maze.toBits(253);
-    // console.log(maze, this.maze.map(_=>_.toBoolean()))
     this.position = position;
     this.end = end;
   }
-
-  // serialize(): Field {
-  //   return Field.fromBits(this.maze);
-  // }
 
   walk(direction: Field) {
     direction.assertLessThan(Field(4));
@@ -42,14 +37,11 @@ class Maze {
 
     // pos = prevPosition + width * (2 * orientation - 1) * (1 - head) + (2 * orientation - 1) * head
     const ori = orientation.mul(Field(2)).sub(Field(1));
-    const pos = this.position
-      .add(this.widthField
-        .mul(ori)
-        .mul(Field(1).sub(heading)
-        )
-        .add(ori.mul(heading)));
+    const pos = this.position.add(
+      this.widthField.mul(ori).mul(Field(1).sub(heading)).add(ori.mul(heading))
+    );
 
-    // the avater should not stand on the wall          
+    // the avater should not stand on the wall
     for (let i = 0; i < this.maze.length; i++) {
       const mp = this.maze[i].toField();
       const terrain = Circuit.if(pos.equals(i), mp, Field(0));
@@ -61,21 +53,18 @@ class Maze {
 
   printState() {
     let output = '';
-    // console.log(this.maze)
-    // console.log(this.height, this.width, Number(this.position.toBigInt()), Number(this.end.toBigInt()), this.maze[0].toBoolean())
     for (let y = 0; y < this.height; y++) {
       for (let x = 0; x < this.width; x++) {
         const tmpPos = y * this.width + x;
         if (Number(this.position.toBigInt()) == tmpPos) {
-          output += "P";
+          output += 'P';
         } else if (Number(this.end.toBigInt()) == tmpPos) {
-          output += "E";
+          output += 'E';
         } else {
-          output += this.maze[tmpPos].toBoolean() ? "▮" : " ";
+          output += this.maze[tmpPos].toBoolean() ? '▮' : ' ';
         }
-        // console.log("pos",x,y,tmpPos, output.slice(-1))
       }
-      output += "\n";
+      output += '\n';
     }
     console.log(output);
   }
@@ -110,9 +99,7 @@ class MazeContract extends SmartContract {
   }
 
   @method play(direction: Field) {
-    // const mazeExist = UInt64.from(this.maze.get()).greaterThan(UInt64.from(0));
     // 1. if the game is already finished, abort.
-    // mazeExist.assertTrue();
     this.maze.get().assertGreaterThan(Field(0));
 
     // 2. precondition that links this.maze.get() to the actual on-chain state

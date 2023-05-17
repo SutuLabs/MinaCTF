@@ -1,15 +1,10 @@
 import { Maze, MazeContract } from './maze';
-import {
-  Field,
-  PrivateKey,
-  PublicKey,
-  Mina,
-  AccountUpdate,
-} from 'snarkyjs';
+import { Field, PrivateKey, PublicKey, Mina, AccountUpdate } from 'snarkyjs';
 
-import { serializeToMaze } from "./mazeGenerator";
+import { serializeToMaze } from './mazeGenerator';
 
-const defMaze = serializeToMaze(`
+const defMaze = serializeToMaze(
+  `
 11111111111111111111111
 1  S                  1
 1     E               1
@@ -33,7 +28,8 @@ describe('maze', () => {
   beforeEach(async () => {
     let Local = Mina.LocalBlockchain({ proofsEnabled: false });
     Mina.setActiveInstance(Local);
-    [{ publicKey: playerPublicKey, privateKey: playerPrivateKey }] = Local.testAccounts;
+    [{ publicKey: playerPublicKey, privateKey: playerPrivateKey }] =
+      Local.testAccounts;
     zkAppPrivateKey = PrivateKey.random();
     zkAppAddress = zkAppPrivateKey.toPublicKey();
   });
@@ -45,7 +41,11 @@ describe('maze', () => {
     let txn = await Mina.transaction(playerPublicKey, () => {
       AccountUpdate.fundNewAccount(playerPublicKey);
       zkApp.deploy();
-      zkApp.startGame(Field(defMaze.maze), Field(defMaze.start), Field(defMaze.end));
+      zkApp.startGame(
+        Field(defMaze.maze),
+        Field(defMaze.start),
+        Field(defMaze.end)
+      );
     });
     await txn.prove();
     await txn.sign([zkAppPrivateKey, playerPrivateKey]).send();
