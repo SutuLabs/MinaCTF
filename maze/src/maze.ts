@@ -33,16 +33,14 @@ class Maze {
   walk(direction: Field) {
     direction.assertLessThan(Field(4), 'Incorrect direction');
     const dirbits = direction.toBits(2);
-    const orientation = dirbits[0].toField();
-    const heading = dirbits[1].toField();
+    const heading = dirbits[0];
+    const orientation = dirbits[1];
 
-    // pos = prevPosition + width * (2 * orientation - 1) * (1 - head) + (2 * orientation - 1) * head
-    const ori = orientation.mul(Field(2)).sub(Field(1));
+    // calculate the new position according to direction
     const pos = this.position.add(
-      Field(this.width)
-        .mul(ori)
-        .mul(Field(1).sub(heading))
-        .add(ori.mul(heading))
+      Circuit.if(orientation, Field(1), Field(this.width)).mul(
+        Circuit.if(heading, Field(1), Field(-1))
+      )
     );
 
     // the avater should not stand on the wall
