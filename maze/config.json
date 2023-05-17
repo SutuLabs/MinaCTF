@@ -1,4 +1,11 @@
 {
   "version": 1,
-  "deployAliases": {}
+  "deployAliases": {
+    "bk": {
+      "url": "http://berkeley.mina.sutulabs.com/graphql",
+      "keyPath": "keys/bk.json",
+      "fee": "0.1",
+      "smartContract": "MazeContract"
+    }
+  }
 }
