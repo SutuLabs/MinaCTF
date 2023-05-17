@@ -18,29 +18,32 @@ class Maze {
   maze: Bool[];
   position: Field;
   end: Field;
-  width: 23;
-  height: 11;
+  width = 23;
+  height = 11;
+  widthField = Field(23);
+  heightField = Field(11);
 
   constructor(maze: Field, position: Field, end: Field) {
     this.maze = maze.toBits(253);
+    // console.log(maze, this.maze.map(_=>_.toBoolean()))
     this.position = position;
     this.end = end;
   }
 
-  serialize(): Field {
-    return Field.fromBits(this.maze);
-  }
+  // serialize(): Field {
+  //   return Field.fromBits(this.maze);
+  // }
 
   walk(direction: Field) {
-    direction.assertLessThan(4);
+    direction.assertLessThan(Field(4));
     const dirbits = direction.toBits(2);
     const orientation = dirbits[0].toField();
     const heading = dirbits[1].toField();
 
     // pos = prevPosition + width * (2 * orientation - 1) * (1 - head) + (2 * orientation - 1) * head
-    const ori = orientation.mul(2).sub(1);
+    const ori = orientation.mul(Field(2)).sub(Field(1));
     const pos = this.position
-      .add(Field(this.width)
+      .add(this.widthField
         .mul(ori)
         .mul(Field(1).sub(heading)
         )
@@ -50,12 +53,16 @@ class Maze {
     for (let i = 0; i < this.maze.length; i++) {
       const mp = this.maze[i].toField();
       const terrain = Circuit.if(pos.equals(i), mp, Field(0));
-      terrain.assertEquals(0);
+      terrain.assertEquals(Field(0));
     }
+
+    this.position = pos;
   }
 
   printState() {
     let output = '';
+    // console.log(this.maze)
+    // console.log(this.height, this.width, Number(this.position.toBigInt()), Number(this.end.toBigInt()), this.maze[0].toBoolean())
     for (let y = 0; y < this.height; y++) {
       for (let x = 0; x < this.width; x++) {
         const tmpPos = y * this.width + x;
@@ -63,10 +70,10 @@ class Maze {
           output += "P";
         } else if (Number(this.end.toBigInt()) == tmpPos) {
           output += "E";
-        }
-        else {
+        } else {
           output += this.maze[tmpPos].toBoolean() ? "▮" : " ";
         }
+        // console.log("pos",x,y,tmpPos, output.slice(-1))
       }
       output += "\n";
     }
@@ -103,19 +110,24 @@ class MazeContract extends SmartContract {
   }
 
   @method play(direction: Field) {
-    const mazeExist = this.maze.get().greaterThan(Field(0));
+    // const mazeExist = UInt64.from(this.maze.get()).greaterThan(UInt64.from(0));
     // 1. if the game is already finished, abort.
-    mazeExist.assertTrue();
+    // mazeExist.assertTrue();
+    this.maze.get().assertGreaterThan(Field(0));
 
-    // 2. walk direction
-    this.maze.assertEquals(this.maze.get()); // precondition that links this.maze.get() to the actual on-chain state
+    // 2. precondition that links this.maze.get() to the actual on-chain state
+    this.maze.assertEquals(this.maze.get());
+    this.position.assertEquals(this.position.get());
+    this.end.assertEquals(this.end.get());
+
+    // 3. walk direction
     const maze = new Maze(this.maze.get(), this.position.get(), this.end.get());
     maze.walk(direction);
 
-    // 3. persistent our move
-    this.maze.set(maze.serialize());
+    // 4. persistent our move
+    this.position.set(maze.position);
 
-    // 4. did I just win? If so, update the flag as well
+    // 5. did I just win? If so, update the flag as well
     const won = maze.checkWinner();
     const flag = Circuit.if(won, Field(111111), Field(0));
     this.flag.set(flag);

@@ -1,3 +1,3 @@
-import { TicTacToe, Board } from './tictactoe.js';
+import { Maze, MazeContract } from './maze.js';
 
-export { TicTacToe, Board };
+export { Maze, MazeContract };
