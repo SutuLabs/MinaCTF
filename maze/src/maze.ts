@@ -1,6 +1,9 @@
 /**
  * This file defines the `Maze` smart contract and the helpers it needs.
  */
+const FLAG = 111111n;
+const MAZE_WIDTH = 23;
+const MAZE_HEIGHT = 11;
 
 import {
   Field,
@@ -18,10 +21,8 @@ class Maze {
   maze: Bool[];
   position: Field;
   end: Field;
-  width = 23;
-  height = 11;
-  widthField = Field(23);
-  heightField = Field(11);
+  width = MAZE_WIDTH;
+  height = MAZE_HEIGHT;
 
   constructor(maze: Field, position: Field, end: Field) {
     this.maze = maze.toBits(253);
@@ -30,7 +31,7 @@ class Maze {
   }
 
   walk(direction: Field) {
-    direction.assertLessThan(Field(4));
+    direction.assertLessThan(Field(4), 'Incorrect direction');
     const dirbits = direction.toBits(2);
     const orientation = dirbits[0].toField();
     const heading = dirbits[1].toField();
@@ -38,14 +39,17 @@ class Maze {
     // pos = prevPosition + width * (2 * orientation - 1) * (1 - head) + (2 * orientation - 1) * head
     const ori = orientation.mul(Field(2)).sub(Field(1));
     const pos = this.position.add(
-      this.widthField.mul(ori).mul(Field(1).sub(heading)).add(ori.mul(heading))
+      Field(this.width)
+        .mul(ori)
+        .mul(Field(1).sub(heading))
+        .add(ori.mul(heading))
     );
 
     // the avater should not stand on the wall
     for (let i = 0; i < this.maze.length; i++) {
       const mp = this.maze[i].toField();
       const terrain = Circuit.if(pos.equals(i), mp, Field(0));
-      terrain.assertEquals(Field(0));
+      terrain.assertEquals(Field(0), 'walked onto the wall');
     }
 
     this.position = pos;
@@ -91,16 +95,16 @@ class MazeContract extends SmartContract {
     this.position.set(Field(0));
   }
 
-  @method startGame(maze: Field, position: Field, end: Field) {
+  @method startGame(maze: Field, start: Field, end: Field) {
     this.maze.assertEquals(Field(0));
     this.maze.set(maze);
-    this.position.set(position);
+    this.position.set(start);
     this.end.set(end);
   }
 
   @method play(direction: Field) {
     // 1. if the game is already finished, abort.
-    this.maze.get().assertGreaterThan(Field(0));
+    this.maze.get().assertGreaterThan(Field(0), 'game not started');
 
     // 2. precondition that links this.maze.get() to the actual on-chain state
     this.maze.assertEquals(this.maze.get());
@@ -116,7 +120,7 @@ class MazeContract extends SmartContract {
 
     // 5. did I just win? If so, update the flag as well
     const won = maze.checkWinner();
-    const flag = Circuit.if(won, Field(111111), Field(0));
+    const flag = Circuit.if(won, Field(FLAG), Field(0));
     this.flag.set(flag);
   }
 }

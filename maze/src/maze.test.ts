@@ -1,7 +1,7 @@
 import { Maze, MazeContract } from './maze';
 import { Field, PrivateKey, PublicKey, Mina, AccountUpdate } from 'snarkyjs';
 
-import { serializeToMaze } from './mazeGenerator';
+import { Direction, serializeToMaze } from './mazeGenerator';
 
 const defMaze = serializeToMaze(
   `
@@ -58,7 +58,12 @@ describe('maze', () => {
     new Maze(m, p, e).printState();
 
     // move
-    const moves = [1, 3, 3, 3];
+    const moves = [
+      Direction.Down,
+      Direction.Right,
+      Direction.Right,
+      Direction.Right,
+    ];
     for (let i = 0; i < moves.length; i++) {
       const move = moves[i];
       txn = await Mina.transaction(playerPublicKey, async () => {
@@ -68,13 +73,22 @@ describe('maze', () => {
       await txn.sign([playerPrivateKey]).send();
 
       if (i < moves.length - 1) {
+        // before last move, the flag keep empty(zero)
         const f = zkApp.flag.get();
         f.assertEquals(0);
       } else {
-        // last move is success, get the right flag
+        // when last move is success, get the right flag
         const f = zkApp.flag.get();
+        if (f.equals(0)) {
+          // print maze when last move is not success
+          new Maze(
+            zkApp.maze.get(),
+            zkApp.position.get(),
+            zkApp.end.get()
+          ).printState();
+        }
         f.assertGreaterThan(0);
-        console.log(f.toBigInt());
+        console.log('flag:', f.toBigInt());
       }
     }
   });
