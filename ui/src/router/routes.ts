@@ -6,8 +6,23 @@ const routes: RouteRecordRaw[] = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', component: () => import('pages/IndexPage.vue') },
-      { path: 'challenges', component: () => import('pages/ChallengePage.vue') },
-      { path: 'scoreboard', component: () => import('pages/ScoreboardPage.vue') },
+      {
+        path: 'challenges',
+        children: [
+          {
+            path: '',
+            component: () => import('pages/ChallengesPage.vue'),
+          },
+          {
+            path: ':id',
+            component: () => import('pages/ChallengePage.vue'),
+          },
+        ],
+      },
+      {
+        path: 'scoreboard',
+        component: () => import('pages/ScoreboardPage.vue'),
+      },
       { path: 'login', component: () => import('pages/LoginPage.vue') },
       { path: 'profile', component: () => import('pages/profilePage.vue') },
     ],

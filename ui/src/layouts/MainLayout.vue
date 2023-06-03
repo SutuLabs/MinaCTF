@@ -72,12 +72,12 @@ const essentialLinks: EssentialLinkProps[] = [
     icon: 'face',
     to: '/profile'
   },
-  {
-    title: 'Github 🔗',
-    caption: 'github.com/sutulabs/minactf',
-    icon: 'code',
-    link: 'https://github.com/sutulabs/minactf'
-  },
+  // {
+  //   title: 'Github 🔗',
+  //   caption: 'github.com/sutulabs/minactf',
+  //   icon: 'code',
+  //   link: 'https://github.com/sutulabs/minactf'
+  // },
 ];
 
 const leftDrawerOpen = ref(false)
