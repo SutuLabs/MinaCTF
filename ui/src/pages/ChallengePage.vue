@@ -32,6 +32,13 @@
           deploy the challenge contract for you.
           <q-btn
             class="q-my-md"
+            @click="compile()"
+            color="primary"
+            label="Compile"
+          />
+          <q-btn
+            v-if="compiled"
+            class="q-my-md"
             @click="deploy()"
             color="deep-orange"
             label="Deploy"
@@ -99,15 +106,21 @@
 
 <script setup lang="ts">
 import { QStepper } from 'quasar';
+import { init } from 'src/services/contract';
 import { ref } from 'vue';
 
 const stepper = ref(QStepper);
 const step = ref(1);
+const compiled = ref(false);
 const description = ref('');
 const contractId = ref('');
 const txid = ref('');
 const allDone = ref(false);
 
+async function compile() {
+  await init();
+  compiled.value = true;
+}
 function deploy() {
   contractId.value = 'conddd';
   stepper.value.next();
