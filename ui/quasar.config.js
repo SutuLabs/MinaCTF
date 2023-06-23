@@ -15,7 +15,7 @@ module.exports = configure(function (/* ctx */) {
     eslint: {
       // fix: true,
       // include: [],
-      // exclude: [],
+      exclude: ['../contracts/build'],
       // rawOptions: {},
       warnings: true,
       errors: true,

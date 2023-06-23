@@ -38,14 +38,14 @@ const functions = {
     const publicKey = PublicKey.fromBase58(args.publicKey58);
     return await fetchAccount({ publicKey });
   },
-  initZkappInstance: async () => {
-    // const publicKey = PublicKey.fromBase58(args.publicKey58);
-    // state.zkapp = new state.CheckinContract!(publicKey);
-    state.zkapp = new state.CheckinContract!();
+  initZkappInstance: async (args: { publicKey58: string }) => {
+    const publicKey = PublicKey.fromBase58(args.publicKey58);
+    state.zkapp = new state.CheckinContract!(publicKey);
+    // state.zkapp = new state.CheckinContract!();
   },
   getNum: async () => {
     const currentNum = await state.zkapp?.flag.get();
-    return JSON.stringify(currentNum.toJSON());
+    return JSON.stringify(currentNum?.toJSON());
   },
   createStartTx: async () => {
     const transaction = await Mina.transaction(() => {
