@@ -1,7 +1,7 @@
 /**
  * This file defines the `Maze` smart contract and the helpers it needs.
  */
-const FLAG = 111111n;
+const FLAG = 111111;
 const MAZE_WIDTH = 23;
 const MAZE_HEIGHT = 11;
 

@@ -1,15 +1,9 @@
 /**
  * This file defines the `Checkin` smart contract and the helpers it needs.
  */
-const FLAG = 111111n;
+const FLAG = 111111;
 
-import {
-  Field,
-  State,
-  SmartContract,
-  state,
-  method,
-} from 'snarkyjs';
+import { Field, State, SmartContract, state, method } from 'snarkyjs';
 
 export { CheckinContract };
 

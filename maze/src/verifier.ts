@@ -1,7 +1,7 @@
 /**
  * This file defines the `Verifier` smart contract and the helpers it needs.
  */
-const FLAG = 111111n;
+const FLAG = 111111;
 
 import {
   Field,
