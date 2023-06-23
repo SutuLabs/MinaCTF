@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import { Mina, PrivateKey, VerificationKey } from "snarkyjs";
-import { CheckinContract } from "../../maze/src/checkin.js";
+import { CheckinContract } from "../../contracts/src/checkin.js";
 import fs from "fs";
 import { deploy, loopUntilAccountExists, tryGetAccount } from "./utils";
 import cors from "cors";

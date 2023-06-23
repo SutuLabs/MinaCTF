@@ -4,8 +4,8 @@ type Transaction = Awaited<ReturnType<typeof Mina.transaction>>;
 
 // ---------------------------------------------------------------------------------------
 
-import type { CheckinContract } from '../../../maze/src/checkin';
-import { CheckinContract as CheckinContractInstance } from '../../../maze/build/src/checkin.js';
+import type { CheckinContract } from '../../../contracts/src/checkin';
+import { CheckinContract as CheckinContractInstance } from '../../../contracts/build/src/checkin.js';
 
 const state = {
   CheckinContract: null as null | typeof CheckinContract,
