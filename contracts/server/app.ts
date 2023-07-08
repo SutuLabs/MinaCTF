@@ -110,6 +110,9 @@ app.post('/deploy', async (req: express.Request, res: express.Response) => {
 
     res.send(
       JSON.stringify({
+        zkAppPrivateKey: r.zkAppPrivateKey
+          ? undefined
+          : zkAppPrivateKey.toBase58(),
         hash,
         url: 'https://berkeley.minaexplorer.com/transaction/' + hash,
       })

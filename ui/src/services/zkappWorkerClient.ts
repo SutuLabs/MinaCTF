@@ -78,16 +78,29 @@ export default class ZkappWorkerClient {
 
   constructor() {
     // this.worker = new Worker(new URL('./zkappWorker.ts', import.meta.url));
-    this.worker = new zkappWorker();
     this.promises = {};
-    this.nextId = 0;
-    console.log('new zaw');
+    this.nextId = -1;
 
+    this.worker = new zkappWorker();
     this.worker.onmessage = (event: MessageEvent<ZkappWorkerReponse>) => {
-      console.log('onmessage', event);
+      // console.log('onmessage', event);
       this.promises[event.data.id].resolve(event.data.data);
       delete this.promises[event.data.id];
     };
+    console.log('new worker client');
+
+    this._call('loadSnarkyJS', null); // any function name is idempotent
+    console.log(this.promises);
+  }
+
+  waitReady(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const lr = this.promises[-1].resolve;
+      this.promises[-1].resolve = function (data: any) {
+        lr(data);
+        resolve(data);
+      };
+    });
   }
 
   _call(fn: WorkerFunctions, args: any) {

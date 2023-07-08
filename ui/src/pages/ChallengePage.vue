@@ -32,17 +32,30 @@
           deploy the challenge contract for you.
           <q-btn
             class="q-my-md"
+            @click="deployContract()"
+            color="secondary"
+            label="Deploy Contract"
+          />
+          <q-btn
+            class="q-my-md"
+            @click="signMessage()"
+            color="secondary"
+            label="Sign"
+          />
+          <q-btn
+            v-if="!compiled"
+            class="q-my-md"
             @click="compile()"
             color="primary"
             label="Compile"
           />
-          <q-btn
-            v-if="compiled"
+          <!-- <q-btn
+            v-else
             class="q-my-md"
             @click="deploy()"
             color="deep-orange"
             label="Deploy"
-          />
+          /> -->
         </q-step>
 
         <q-step :name="2" prefix="2" :done="step > 2" title="Capture">
@@ -106,7 +119,7 @@
 
 <script setup lang="ts">
 import { QStepper } from 'quasar';
-import { init } from 'src/services/contract';
+import { init, deploy, sign } from 'src/services/contract';
 import { ref } from 'vue';
 
 const stepper = ref(QStepper);
@@ -117,14 +130,21 @@ const contractId = ref('');
 const txid = ref('');
 const allDone = ref(false);
 
+async function signMessage() {
+  await sign();
+}
 async function compile() {
   await init();
   compiled.value = true;
 }
-function deploy() {
-  contractId.value = 'conddd';
-  stepper.value.next();
+async function deployContract() {
+  await deploy();
+  // compiled.value = true;
 }
+// function deploy() {
+//   contractId.value = 'conddd';
+//   stepper.value.next();
+// }
 function submit() {
   stepper.value.next();
 }

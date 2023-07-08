@@ -15,7 +15,6 @@ const state = {
 
 // ---------------------------------------------------------------------------------------
 
-console.log('something');
 const functions = {
   loadSnarkyJS: async () => {
     console.log('hello1');
@@ -93,4 +92,7 @@ addEventListener('message', async (event: MessageEvent<ZkappWorkerRequest>) => {
   };
   postMessage(message);
 });
+
+console.log('worker ready');
+postMessage({ id: -1, data: undefined } as ZkappWorkerReponse);
 // }
