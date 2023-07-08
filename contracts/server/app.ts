@@ -5,6 +5,7 @@ import { CheckinContract } from '../src/checkin.js';
 import fs from 'fs';
 import { deploy, loopUntilAccountExists, tryGetAccount } from './utils';
 import cors from 'cors';
+const { default: Signer } = await import('mina-signer');
 
 // // eslint-disable-next-line @typescript-eslint/no-explicit-any
 // (BigInt.prototype as any).toJSON = function () {
@@ -162,6 +163,41 @@ app.post('/deploy', async (req: express.Request, res: express.Response) => {
     // console.log(`updated state! ${await zkapp.num.fetch()}`);
 
     // ----------------------------------------------------
+  } catch (err) {
+    console.warn(err);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    res
+      .status(500)
+      .send(JSON.stringify({ success: false, error: (<any>err).message }));
+  }
+});
+
+app.post('/verify', async (req: express.Request, res: express.Response) => {
+  try {
+    const r = req.body as any;
+
+    const publicKey = r.publicKey;
+    const signature = r.signature;
+    const verifyMessage = r.data;
+    const signer = new Signer({ network: 'testnet' });
+
+    let verifyResult;
+    try {
+      const nextSignature =
+        typeof signature === 'string' ? JSON.parse(signature) : signature;
+      const verifyBody = {
+        data: verifyMessage,
+        publicKey: publicKey,
+        signature: nextSignature,
+      };
+      console.log(verifyBody);
+      verifyResult = signer.verifyMessage(verifyBody);
+    } catch (error) {
+      verifyResult = { error: { message: 'verify failed' } };
+    }
+
+    console.log(verifyResult);
+    res.send(verifyResult);
   } catch (err) {
     console.warn(err);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
