@@ -16,6 +16,7 @@
   "scripts": {
     "build": "tsc",
     "buildw": "tsc --watch",
+    "serve": "nodemon server/server.ts",
     "coverage": "node --experimental-vm-modules --experimental-wasm-threads node_modules/jest/bin/jest.js --coverage",
     "format": "prettier --write --ignore-unknown **/*",
     "test": "node --experimental-vm-modules --experimental-wasm-threads node_modules/jest/bin/jest.js --verbose",
@@ -41,9 +42,15 @@
     "lint-staged": "^11.0.1",
     "prettier": "^2.3.2",
     "ts-jest": "^27.0.7",
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.17",
+    "@types/node": "^20.3.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "nodemon": "^2.0.22",
+    "snarkyjs": "^0.11.0",
+    "ts-node": "^10.9.1",
     "typescript": "^4.7.2"
-  },
-  "peerDependencies": {
-    "snarkyjs": "0.11.*"
   }
 }
