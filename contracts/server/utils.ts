@@ -61,7 +61,8 @@ async function getContractTx(
   sender: PublicKey,
   zkAppPrivateKey: PrivateKey,
   zkapp: SmartContract,
-  verificationKey: { data: string; hash: string | Field }
+  verificationKey: { data: string; hash: string | Field },
+  txInclude?: (zkapp: SmartContract) => void
 ): Promise<{ success: boolean; tx?: string; error?: string }> {
   const zkAppPublicKey = zkAppPrivateKey.toPublicKey();
 
@@ -93,6 +94,7 @@ async function getContractTx(
       // NOTE: this calls `init()` if this is the first deploy
       zkapp.deploy({ verificationKey, zkappKey: zkAppPrivateKey });
       // zkapp.deploy({ zkappKey: zkAppPrivateKey });
+      txInclude?.(zkapp);
     }
   );
   console.log('Proving transaction...');

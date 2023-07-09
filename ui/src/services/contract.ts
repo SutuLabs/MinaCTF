@@ -27,6 +27,13 @@ interface CaptureRequest {
   contractId: string;
 }
 
+interface GeneralFeedback {
+  success: boolean;
+  error?: string;
+}
+
+type CaptureResponse = GeneralFeedback;
+
 interface ChallengeStatusResponse {
   publicKey: string; //base58
   challenges: {
@@ -154,6 +161,32 @@ export async function getStatus(
 
   return respjson;
 }
+
+export async function submitCapture(contractId: string, challenge: string) {
+  const req: CaptureRequest = {
+    contractId,
+  };
+  const resp = await fetch(rpcUrl + 'api/' + challenge, {
+    method: 'PUT',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(req),
+  });
+  if (resp.status != 200) {
+    throw new Error(
+      'NETWORK_ERROR: ' +
+        resp.status.toString() +
+        '\nERROR: ' +
+        (await resp.text())
+    );
+  }
+  const ret = (await resp.json()) as CaptureResponse;
+
+  return ret;
+}
+
 export async function init() {
   const zkappWorkerClient = store.$state.zkappWorkerClient
     ? store.$state.zkappWorkerClient

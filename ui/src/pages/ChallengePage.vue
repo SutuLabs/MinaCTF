@@ -22,7 +22,7 @@
         </p>
         <h6 class="q-my-md">Challenge</h6>
         <p>
-          {{ $route.params.id }}
+          {{ challengeName }}
         </p>
         <h6 class="q-my-md">Description</h6>
         <p>
@@ -66,16 +66,16 @@
             >
               <template v-slot:loading>
                 <q-spinner-hourglass class="on-left" />
-                <span v-if="(deployingStage = 'Preparing')">Preparing</span>
-                <span v-if="(deployingStage = 'GettingSignature')"
+                <span v-if="deployingStage == 'Preparing'">Preparing</span>
+                <span v-if="deployingStage == 'GettingSignature'"
                   >Authenticate</span
                 >
-                <span v-if="(deployingStage = 'GettingTx')">Getting Tx</span>
-                <span v-if="(deployingStage = 'SendTx')">Send Tx</span>
-                <span v-if="(deployingStage = 'GettingOnChainStatus')"
+                <span v-if="deployingStage == 'GettingTx'">Getting Tx</span>
+                <span v-if="deployingStage == 'SendTx'">Send Tx</span>
+                <span v-if="deployingStage == 'GettingOnChainStatus'"
                   >Getting Tx Status</span
                 >
-                <span v-if="(deployingStage = 'WaitingTxOnChain')"
+                <span v-if="deployingStage == 'WaitingTxOnChain'"
                   >Waiting Tx On-chain</span
                 >
               </template>
@@ -96,53 +96,36 @@
           </q-step>
 
           <q-step :name="2" prefix="2" :done="step > 2" title="Capture">
-            Step2: Read the contract code, try to work out the challenge, and
-            let flag field filled with right value.
+            <p class="q-my-md">
+              Step2: Read the contract code, try to work out the challenge, and
+              let flag field filled with right value.
+            </p>
+            <p class="q-my-md">
+              Step3: Click "Complete" button to ask server check your solution.
+            </p>
             <q-btn
-              class="q-my-md"
-              @click="($refs.stepper as QStepper).next()"
-              color="deep-orange"
-              label="Continue"
-            />
-          </q-step>
-
-          <q-step :name="3" :done="step > 3" prefix="3" title="Submit">
-            Step3: Click "Get Flag" button to submit the transaction hash which
-            has triggered the Flag event.
-            <q-input
-              filled
-              bottom-slots
-              v-model="txid"
-              label="Transaction Id"
-              :dense="true"
-            >
-              <template v-slot:before>
-                <q-icon name="flag" />
-              </template>
-
-              <template v-slot:append>
-                <q-icon
-                  v-if="txid !== ''"
-                  name="close"
-                  @click="txid = ''"
-                  class="cursor-pointer"
-                />
-              </template>
-
-              <template v-slot:hint>e.g. 0x..... </template>
-            </q-input>
-            <q-btn
-              class="q-my-md"
+              class="q-my-md full-width"
               @click="submit()"
+              :loading="isSubmitting"
               color="deep-orange"
-              label="Submit"
-            />
+              label="Complete"
+            >
+              <template v-slot:loading>
+                <q-spinner-hourglass class="on-left" />
+                <span v-if="submitStage == 'Preparing'">Preparing</span>
+                <span v-if="submitStage == 'CheckStatus'">Checking</span>
+                <span v-if="submitStage == 'SubmitCheck'">Submitting</span>
+              </template>
+            </q-btn>
+            <p v-if="submitError" class="q-my-md text-negative">
+              {{ submitError }}
+            </p>
           </q-step>
 
           <q-step
-            :name="4"
-            :done="step > 3"
-            prefix="4"
+            :name="3"
+            :done="step > 2"
+            prefix="3"
             title="Done"
             active-icon="check"
             active-color="green"
@@ -163,6 +146,7 @@ import { ref, Ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
+const challengeName = route.params.id as string;
 
 const stepper = ref(QStepper);
 const step = ref(1);
@@ -170,10 +154,8 @@ const step = ref(1);
 const description = ref('');
 const publicKey = ref('');
 const contractId = ref('');
-const txid = ref('');
 const txHash = ref('');
 const walletExist = ref(false);
-const allDone = ref(false);
 const isDeploying = ref(false);
 const deployingStage: Ref<
   | 'Preparing'
@@ -182,7 +164,11 @@ const deployingStage: Ref<
   | 'GettingTx'
   | 'WaitingTxOnChain'
   | 'GettingOnChainStatus'
-> = ref('GettingSignature');
+> = ref('Preparing');
+const isSubmitting = ref(false);
+const submitStage: Ref<'Preparing' | 'CheckStatus' | 'SubmitCheck'> =
+  ref('Preparing');
+const submitError = ref('');
 
 const score = ref(-1);
 const startTime = ref(0);
@@ -218,15 +204,19 @@ async function connect() {
 async function getInfo() {
   const status = await contract.getStatus(publicKey.value);
   // console.log(status);
-  const c = status.challenges.filter((_) => _.name == route.params.id)[0];
+  const c = status.challenges.filter((_) => _.name == challengeName)[0];
   if (c) {
+    console.log('c', c);
     contractId.value = c.contractId;
     score.value = c.score;
     startTime.value = c.startTime;
     captureTime.value = c.captureTime;
-    stepper.value.next();
-    if ((captureTime.value ?? 0) > 0) {
-      stepper.value.next();
+    // stepper.value.next();
+    if (captureTime.value > 0) {
+      // stepper.value.next();
+      step.value = 3;
+    } else {
+      step.value = 2;
     }
   }
 }
@@ -281,7 +271,49 @@ async function checkDeployment() {
   }
 }
 
-function submit() {
-  stepper.value.next();
+async function submit() {
+  isSubmitting.value = true;
+  submitError.value = '';
+  try {
+    submitStage.value = 'CheckStatus';
+    const response = await fetchAccount(
+      { publicKey: contractId.value },
+      endpointUrl
+    );
+    const state = response.account?.zkapp?.appState;
+    const flagpos = 1;
+    const flagarr = state?.[flagpos]?.value?.[1];
+    if (flagarr) {
+      const targetArr = num2Arr(111111n);
+      if (JSON.stringify(flagarr) == JSON.stringify(targetArr)) {
+        submitStage.value = 'SubmitCheck';
+        const ret = await contract.submitCapture(
+          contractId.value,
+          challengeName
+        );
+        if (ret.success) {
+          stepper.value.next();
+        } else {
+          submitError.value = ret.error ?? '';
+        }
+      } else {
+        submitError.value = 'flag not caught.';
+      }
+    } else {
+      submitError.value = 'wrong contract';
+    }
+  } finally {
+    isSubmitting.value = false;
+  }
+}
+
+function num2Arr(number: bigint, length = 32): Uint8Array {
+  let pos = 0;
+  const arr = new Uint8Array(length);
+  while (number > 0) {
+    arr[pos++] = Number(number & 255n);
+    number >>= 8n;
+  }
+  return arr;
 }
 </script>
