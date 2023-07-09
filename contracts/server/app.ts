@@ -1,11 +1,29 @@
-import 'dotenv/config';
-import express from 'express';
-import { Mina, PrivateKey, VerificationKey } from 'snarkyjs';
+import './config';
+import express, { response } from 'express';
+import { Mina, PrivateKey, PublicKey, VerificationKey } from 'snarkyjs';
 import { CheckinContract } from '../src/checkin.js';
 import fs from 'fs';
-import { deploy, loopUntilAccountExists, tryGetAccount } from './utils';
+import {
+  deploy,
+  getContractTx,
+  loopUntilAccountExists,
+  tryGetAccount,
+} from './utils';
 import cors from 'cors';
+import PocketBase from 'pocketbase';
+// import 'cross-fetch/polyfill';
 const { default: Signer } = await import('mina-signer');
+
+const pbUrl = process.env.PB_URL;
+const pbUsername = process.env.PB_USERNAME;
+const pbPassword = process.env.PB_PASSWORD;
+if (!pbUrl || !pbUsername || !pbPassword) {
+  throw new Error(
+    'Environment variable PB_URL, PB_USERNAME, PB_PASSWORD must be assigned'
+  );
+}
+const pb = new PocketBase(pbUrl);
+await pb.collection('users').authWithPassword(pbUsername, pbPassword);
 
 // // eslint-disable-next-line @typescript-eslint/no-explicit-any
 // (BigInt.prototype as any).toJSON = function () {
@@ -206,5 +224,254 @@ app.post('/verify', async (req: express.Request, res: express.Response) => {
       .send(JSON.stringify({ success: false, error: (<any>err).message }));
   }
 });
+
+interface AuthEntity {
+  publicKey: string;
+  signature: { field: string; scalar: string };
+  message: string;
+}
+
+interface StartRequest {
+  auth: AuthEntity;
+}
+
+interface StartResponse {
+  tx: string;
+  contractId: string;
+}
+
+interface CaptureRequest {
+  contractId: string;
+}
+
+interface ChallengeStatusResponse {
+  publicKey: string; //base58
+  challenges: {
+    contractId: string;
+    score: number;
+    startTime: number;
+    captureTime: number;
+    name: string;
+  }[];
+}
+
+interface ScoreListResponse {
+  scores: { username: string; score: number }[];
+}
+
+app.post(
+  '/api/:challenge',
+  async (req: express.Request, res: express.Response) => {
+    try {
+      const challenge = req.params.challenge;
+      // check challenge against dictionary
+
+      const r = req.body as StartRequest;
+      const deployerPublicKey = PublicKey.fromBase58(r.auth.publicKey);
+
+      const a = authenticate(r.auth);
+      if (!a.success) {
+        console.log('error authenticate user', a);
+        res.send({
+          success: false,
+          error: 'failed to authenticate user, maybe signature is wrong.',
+        });
+        return;
+      }
+
+      // check deployer pk balance
+
+      let account = await tryGetAccount({
+        account: deployerPublicKey,
+        isZkAppAccount: false,
+      });
+
+      if (!account) {
+        const msg =
+          'Deployer account does not exist. ' +
+          'Request funds at faucet https://berkeley.minaexplorer.com/faucet or ' +
+          'https://faucet.minaprotocol.com/?address=' +
+          deployerPublicKey.toBase58();
+        console.log(msg);
+        res.status(400).send(JSON.stringify({ success: false, error: msg }));
+        return;
+      }
+      console.log(
+        `Using fee payer account with nonce ${account.nonce}, balance ${account.balance}`
+      );
+
+      // create tx
+      const zkAppPrivateKey = PrivateKey.random(); // maybe consider deterministic private key
+      const zkAppPublicKey = zkAppPrivateKey.toPublicKey();
+      // select from challenge
+      let zkapp = new CheckinContract(zkAppPublicKey);
+
+      const ctx = await getContractTx(
+        deployerPublicKey,
+        zkAppPrivateKey,
+        zkapp,
+        verificationKey
+      );
+      if (!ctx.success || !ctx.tx) {
+        res
+          .status(500)
+          .send({ success: false, error: 'failed to generate tx' });
+        return;
+      }
+
+      // log to db (overwrite)
+      const tracker = pb.collection('tracker');
+      const clist = await tracker.getFullList({
+        filter: `publicKey='${deployerPublicKey.toBase58()}' && challengeName='${challenge}'`,
+      });
+
+      console.log(clist);
+      if (clist.length > 0) {
+        const citem = clist[0];
+        await tracker.update(citem.id, {
+          startTime: new Date(Date.now()),
+          captureTime: 0,
+          score: 0,
+          contractId: zkAppPublicKey,
+        });
+      } else {
+        await tracker.create({
+          publicKey: deployerPublicKey.toBase58(),
+          challengeName: challenge,
+          startTime: new Date(Date.now()),
+          captureTime: 0,
+          score: 0,
+          contractId: zkAppPublicKey,
+        });
+      }
+      const resp: StartResponse = {
+        tx: ctx.tx,
+        contractId: zkAppPublicKey.toBase58(),
+      };
+      res.send(resp);
+    } catch (err) {
+      console.warn(err);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      res
+        .status(500)
+        .send(JSON.stringify({ success: false, error: (<any>err).message }));
+    }
+  }
+);
+
+app.put(
+  '/api/:challenge',
+  async (req: express.Request, res: express.Response) => {
+    try {
+      // const challenge = req.params.challenge;
+      // // check challenge against dictionary
+      const publicKey = req.params.publicKey; // need to escape to avoid attack
+
+      const r = req.body as CaptureRequest;
+
+      //TODO: check challenge status and update db
+    } catch (err) {
+      console.warn(err);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      res
+        .status(500)
+        .send(JSON.stringify({ success: false, error: (<any>err).message }));
+    }
+  }
+);
+
+app.get(
+  '/api/:publicKey',
+  async (req: express.Request, res: express.Response) => {
+    try {
+      const publicKey = req.params.publicKey; // need to escape to avoid attack
+
+      //   - response: { publicKey: base58(string), challenges: { contractId: string, score: number, startTime: number, captureTime: number }[] }
+      const tracker = pb.collection('tracker');
+      const clist = await tracker.getFullList({
+        filter: `publicKey='${publicKey}'`,
+      });
+      const ret: ChallengeStatusResponse = {
+        publicKey,
+        challenges: clist.map((_) => ({
+          contractId: _.contractId,
+          score: _.score,
+          startTime: new Date(_.startTime).getTime(),
+          captureTime: new Date(_.captureTime).getTime(),
+          name: _.challengeName,
+        })),
+      };
+      res.send(ret);
+    } catch (err) {
+      console.warn(err);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      res
+        .status(500)
+        .send(JSON.stringify({ success: false, error: (<any>err).message }));
+    }
+  }
+);
+
+/// legacy
+// app.post(
+//   '/api/user/login',
+//   async (req: express.Request, res: express.Response) => {
+//     try {
+//       const r = req.body as LoginRequest;
+
+//       const publicKey = r.publicKey;
+//       const signature = r.signature;
+//       const verifyMessage = r.message;
+//       const signer = new Signer({ network: 'testnet' });
+
+//       let verifyResult;
+//       try {
+//         const nextSignature =
+//           typeof signature === 'string' ? JSON.parse(signature) : signature;
+//         const verifyBody = {
+//           data: verifyMessage,
+//           publicKey: publicKey,
+//           signature: nextSignature,
+//         };
+//         console.log(verifyBody);
+//         verifyResult = signer.verifyMessage(verifyBody);
+//       } catch (error) {
+//         verifyResult = { error: { message: 'verify failed' } };
+//       }
+
+//       console.log(verifyResult);
+//       res.send(verifyResult);
+//     } catch (err) {
+//       console.warn(err);
+//       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+//       res
+//         .status(500)
+//         .send(JSON.stringify({ success: false, error: (<any>err).message }));
+//     }
+//   }
+// );
+
+function authenticate(auth: AuthEntity): { success: boolean; error?: string } {
+  const publicKey = auth.publicKey;
+  const signature = auth.signature;
+  const verifyMessage = auth.message;
+  const signer = new Signer({ network: 'testnet' });
+
+  let verifyResult;
+  try {
+    const nextSignature =
+      typeof signature === 'string' ? JSON.parse(signature) : signature;
+    const verifyBody = {
+      data: verifyMessage,
+      publicKey: publicKey,
+      signature: nextSignature,
+    };
+    verifyResult = { success: signer.verifyMessage(verifyBody) };
+  } catch (error) {
+    verifyResult = { success: false, error: 'verify failed' };
+  }
+
+  return verifyResult;
+}
 
 export default app;

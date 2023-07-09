@@ -36,18 +36,14 @@ gantt
     - captureTime
     - score
 - Backend
-  - start a challenge: POST /api/challenge/{name}
-    - request: { payerPk: base58(string) }
-    - response: { tx: object }
-  - submit the flag: POST /api/challenge/{name}
-    - request: { flag: string }
+  - start a challenge: POST /api/:challenge
+    - request: { payerPk: base58(string), auth: { pk: string, signature: {field: string, scalar: string}, message: string } }
+    - response: { tx: object, contractId: base58(string) }
+  - submit the flag: PUT /api/:challenge
+    - request: { publicKey: string }
     - response: { success: boolean }
-  - login: POST /api/user/login
-    - request: { pk: string, signature: {field: string, scalar: string}, message: string }
-    - response: { token: string }
-  - logout: POST /api/user/logout
-    - request: { token: string }
-    - response: { success: boolean }
+  - challenge status: GET /api/:publicKey
+    - response: { publicKey: base58(string), challenges: { contractId: string, score: number, startTime: number, captureTime: number }[] }
   - scores: GET /api/score/list
     - response: { username: string, score: number }[]
 - Frontend

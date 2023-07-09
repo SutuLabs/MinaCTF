@@ -1,8 +1,8 @@
-import 'dotenv/config'
-import express from 'express'
-import cluster from 'cluster'
-import os from 'os'
-import app from './app'
+import './config';
+import express from 'express';
+import cluster from 'cluster';
+import os from 'os';
+import app from './app';
 
 // Check the number of available CPU.
 let maxThreads = Number(process.env.MAX_THREAD ?? Number.MAX_SAFE_INTEGER);
@@ -28,16 +28,20 @@ if (cluster.isPrimary && numCPUs > 1) {
 
 // For Worker
 else {
-
-  app.use((_req: express.Request, res: express.Response, next: express.NextFunction) => {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Methods", "*")
-    res.header("Access-Control-Allow-Headers", "*");
-    next();
-  })
+  app.use(
+    (
+      _req: express.Request,
+      res: express.Response,
+      next: express.NextFunction
+    ) => {
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Methods', '*');
+      res.header('Access-Control-Allow-Headers', '*');
+      next();
+    }
+  );
 
   app.listen(port, () => {
-    console.log(`Start on port ${port}.`)
-  })
-
+    console.log(`Start on port ${port}.`);
+  });
 }
