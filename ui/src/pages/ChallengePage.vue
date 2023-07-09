@@ -1,6 +1,9 @@
 <template>
   <q-page class="row content-start">
-    <article v-if="!walletExist" class="q-mx-md">
+    <article v-if="!challengeDetail" class="q-mx-md">
+      <p class="q-my-md">Challenge not found!</p>
+    </article>
+    <article v-else-if="!walletExist" class="q-mx-md">
       <p class="q-my-md">You need to install Auro Wallet to continue.</p>
     </article>
     <article v-else-if="!publicKey" class="q-mx-md">
@@ -22,7 +25,7 @@
         </p>
         <h6 class="q-my-md">Challenge</h6>
         <p>
-          {{ challengeName }}
+          {{ challengeDetail.title }}
         </p>
         <h6 class="q-my-md">Description</h6>
         <p>
@@ -144,13 +147,18 @@ import { fetchAccount } from 'snarkyjs';
 import * as contract from 'src/services/contract';
 import { ref, Ref } from 'vue';
 import { useRoute } from 'vue-router';
+import { challengeData, ChallengeEntity } from 'src/services/challengeData';
+
+const endpointUrl = 'http://berkeley.mina.sutulabs.com/graphql';
 
 const route = useRoute();
 const challengeName = route.params.id as string;
 
+const challengeDetail: ChallengeEntity | undefined =
+  challengeData[challengeName];
+
 const stepper = ref(QStepper);
 const step = ref(1);
-// const compiled = ref(false);
 const description = ref('');
 const publicKey = ref('');
 const contractId = ref('');
@@ -174,28 +182,15 @@ const score = ref(-1);
 const startTime = ref(0);
 const captureTime = ref(0);
 
-// async function signMessage() {
-//   await sign();
-// }
-// async function compile() {
-//   await init();
-//   compiled.value = true;
-// }
-// async function deployContract() {
-//   await deploy();
-//   // compiled.value = true;
-// }
+const mina = window.mina;
 
-const mina = (window as any).mina; // wallet injection
-
-if (mina == null) {
-  walletExist.value = false;
-} else {
+if (mina && challengeDetail) {
   walletExist.value = true;
   connect();
 }
 
 async function connect() {
+  if (!mina) return;
   const pk = (await mina.requestAccounts())[0];
   publicKey.value = pk;
   await getInfo();
@@ -203,17 +198,13 @@ async function connect() {
 
 async function getInfo() {
   const status = await contract.getStatus(publicKey.value);
-  // console.log(status);
   const c = status.challenges.filter((_) => _.name == challengeName)[0];
   if (c) {
-    console.log('c', c);
     contractId.value = c.contractId;
     score.value = c.score;
     startTime.value = c.startTime;
     captureTime.value = c.captureTime;
-    // stepper.value.next();
     if (captureTime.value > 0) {
-      // stepper.value.next();
       step.value = 3;
     } else {
       step.value = 2;
@@ -249,7 +240,6 @@ async function deploy() {
   }
 }
 
-const endpointUrl = 'http://berkeley.mina.sutulabs.com/graphql';
 async function checkDeployment() {
   deployingStage.value = 'GettingOnChainStatus';
   const response = await fetchAccount(
@@ -275,32 +265,34 @@ async function submit() {
   isSubmitting.value = true;
   submitError.value = '';
   try {
+    if (!challengeDetail) {
+      submitError.value = 'challenge not found';
+      return;
+    }
     submitStage.value = 'CheckStatus';
     const response = await fetchAccount(
       { publicKey: contractId.value },
       endpointUrl
     );
     const state = response.account?.zkapp?.appState;
-    const flagpos = 1;
+    const flagpos = challengeDetail.flagPosition;
     const flagarr = state?.[flagpos]?.value?.[1];
-    if (flagarr) {
-      const targetArr = num2Arr(111111n);
-      if (JSON.stringify(flagarr) == JSON.stringify(targetArr)) {
-        submitStage.value = 'SubmitCheck';
-        const ret = await contract.submitCapture(
-          contractId.value,
-          challengeName
-        );
-        if (ret.success) {
-          stepper.value.next();
-        } else {
-          submitError.value = ret.error ?? '';
-        }
-      } else {
-        submitError.value = 'flag not caught.';
-      }
-    } else {
+    if (!flagarr) {
       submitError.value = 'wrong contract';
+      return;
+    }
+
+    const targetArr = num2Arr(challengeDetail.flagNumber);
+    if (JSON.stringify(flagarr) != JSON.stringify(targetArr)) {
+      submitError.value = 'flag not caught.';
+    }
+
+    submitStage.value = 'SubmitCheck';
+    const ret = await contract.submitCapture(contractId.value, challengeName);
+    if (ret.success) {
+      stepper.value.next();
+    } else {
+      submitError.value = ret.error ?? '';
     }
   } finally {
     isSubmitting.value = false;

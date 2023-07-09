@@ -1,10 +1,16 @@
 <template>
   <q-page class="q-mt-lg q-ml-md">
+    <p v-if="publicKey" class="q-my-md">
+      You are logged in as
+      <q-chip square icon="key">
+        {{ publicKey }}
+      </q-chip>
+    </p>
     <div class="row fit items-start q-col-gutter-md">
       <div
         class="col-xs-12 col-sm-6 col-md-4"
-        v-for="c in challenges"
-        :key="c.name"
+        v-for="(c, name) in challenges"
+        :key="name"
       >
         <q-card flat bordered>
           <q-card-section horizontal class="row fit">
@@ -19,6 +25,21 @@
             </q-card-section>
 
             <q-card-section class="col-4 flex flex-center">
+              <div class="text-caption">
+                <span
+                  v-if="schallenges?.[name]?.status == 'STARTED'"
+                  class="text-primary"
+                >
+                  STARTED
+                </span>
+                <span
+                  v-else-if="schallenges?.[name]?.status == 'DONE'"
+                  class="text-green"
+                >
+                  DONE
+                </span>
+                <span v-else class="text-grey"> READY </span>
+              </div>
               <q-icon :name="c.icon" size="xl" />
             </q-card-section>
           </q-card-section>
@@ -27,11 +48,7 @@
 
           <q-card-actions class="row">
             <q-btn flat> {{ c.point }} Points </q-btn>
-            <q-btn
-              class="col-grow"
-              color="primary"
-              :to="'/challenges/' + c.name"
-            >
+            <q-btn class="col-grow" color="primary" :to="'/challenges/' + name">
               DETAIL
             </q-btn>
           </q-card-actions>
@@ -42,49 +59,51 @@
 </template>
 
 <script setup lang="ts">
-// import { ref } from 'vue';
+import { ref, Ref } from 'vue';
+import { challengeData as challenges } from 'src/services/challengeData';
+import * as contract from 'src/services/contract';
+import { ChallengeStatusEntity } from 'src/services/contract';
 
-export interface ChallengeEntity {
-  title: string;
-  caption?: string;
-  icon?: string;
-  name?: string;
-  difficulty?: string;
-  point?: number;
+const publicKey = ref('');
+const walletExist = ref(false);
+
+type ChallengeStatus = 'STARTED' | 'DONE' | 'READY';
+interface ExtendChallengeStatusEntity extends ChallengeStatusEntity {
+  status: ChallengeStatus;
 }
 
-const challenges: ChallengeEntity[] = [
-  {
-    title: 'Check in',
-    caption: 'Start here, check in',
-    icon: 'luggage',
-    name: 'checkin',
-    difficulty: 'beginner',
-    point: 100,
-  },
-  {
-    title: 'Maze',
-    caption: 'Find a way',
-    icon: 'extension',
-    name: 'maze',
-    difficulty: 'expert',
-    point: 300,
-  },
-  {
-    title: 'Maze',
-    caption: 'Find a way',
-    icon: 'extension',
-    name: 'maze',
-    difficulty: 'expert',
-    point: 300,
-  },
-  {
-    title: 'Maze',
-    caption: 'Find a way',
-    icon: 'extension',
-    name: 'maze',
-    difficulty: 'expert',
-    point: 300,
-  },
-];
+const schallenges: Ref<
+  { [key: string]: ExtendChallengeStatusEntity } | undefined
+> = ref(undefined);
+
+const mina = window.mina;
+
+if (mina) {
+  walletExist.value = true;
+  connect();
+}
+
+async function connect() {
+  if (!mina) return;
+  const pk = (await mina.requestAccounts())[0];
+  publicKey.value = pk;
+  await getInfo();
+}
+
+async function getInfo() {
+  const status = await contract.getStatus(publicKey.value);
+  schallenges.value = status.challenges.reduce((pv, cv) => {
+    pv[cv.name] = Object.assign(
+      {
+        status: (cv.captureTime ?? 0 > 0
+          ? 'DONE'
+          : cv.startTime ?? 0 > 0
+          ? 'STARTED'
+          : 'READY') as ChallengeStatus,
+      },
+      cv
+    );
+    return pv;
+  }, {} as { [key: string]: ExtendChallengeStatusEntity });
+}
 </script>

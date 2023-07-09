@@ -34,15 +34,17 @@ interface GeneralFeedback {
 
 type CaptureResponse = GeneralFeedback;
 
+export interface ChallengeStatusEntity {
+  contractId: string;
+  score: number;
+  startTime: number;
+  captureTime: number;
+  name: string;
+}
+
 interface ChallengeStatusResponse {
   publicKey: string; //base58
-  challenges: {
-    contractId: string;
-    score: number;
-    startTime: number;
-    captureTime: number;
-    name: string;
-  }[];
+  challenges: ChallengeStatusEntity[];
 }
 
 export async function getContracts() {
