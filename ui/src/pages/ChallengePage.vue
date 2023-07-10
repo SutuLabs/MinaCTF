@@ -285,6 +285,7 @@ async function submit() {
     const targetArr = num2Arr(challengeDetail.flagNumber);
     if (JSON.stringify(flagarr) != JSON.stringify(targetArr)) {
       submitError.value = 'flag not caught.';
+      return;
     }
 
     submitStage.value = 'SubmitCheck';
