@@ -16,11 +16,6 @@ class CheckinContract extends SmartContract {
   init() {
     super.init();
     this.flag.set(Field(0));
-    this.start.set(Field(0));
-  }
-
-  @method startGame() {
-    this.start.assertEquals(Field(0));
     this.start.set(Field(1));
   }
 

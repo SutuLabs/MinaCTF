@@ -1,12 +1,5 @@
 import { CheckinContract } from './checkin';
-import {
-  Field,
-  PrivateKey,
-  PublicKey,
-  Mina,
-  AccountUpdate,
-  Signature,
-} from 'snarkyjs';
+import { Field, PrivateKey, PublicKey, Mina, AccountUpdate } from 'snarkyjs';
 
 describe('checkin', () => {
   let playerPublicKey: PublicKey,
@@ -30,7 +23,6 @@ describe('checkin', () => {
     let txn = await Mina.transaction(playerPublicKey, () => {
       AccountUpdate.fundNewAccount(playerPublicKey);
       zkApp.deploy();
-      zkApp.startGame();
     });
     await txn.prove();
     await txn.sign([zkAppPrivateKey, playerPrivateKey]).send();
