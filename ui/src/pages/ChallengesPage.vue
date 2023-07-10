@@ -60,7 +60,7 @@
 
 <script setup lang="ts">
 import { ref, Ref } from 'vue';
-import { challengeData as challenges } from 'src/services/challengeData';
+import { challengeData as challenges } from 'app/../contracts/server/challengeData';
 import * as contract from 'src/services/contract';
 import { ChallengeStatusEntity } from 'app/../contracts/server/model';
 

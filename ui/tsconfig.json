@@ -5,5 +5,7 @@
   },
   "include": [
     "./src",
+    "../contracts/server/challengeData.ts",
+    "../contracts/server/model.ts",
   ],
 }

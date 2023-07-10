@@ -147,7 +147,10 @@ import { fetchAccount } from 'snarkyjs';
 import * as contract from 'src/services/contract';
 import { ref, Ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { challengeData, ChallengeEntity } from 'src/services/challengeData';
+import {
+  challengeData,
+  ChallengeEntity,
+} from 'app/../contracts/server/challengeData';
 
 const endpointUrl = 'http://berkeley.mina.sutulabs.com/graphql';
 

@@ -12,6 +12,7 @@ import {
   CaptureResponse,
   ChallengeStatusResponse,
 } from './model';
+import { challengeData as cdata } from './challengeData';
 // import 'cross-fetch/polyfill';
 
 const pbUrl = process.env.PB_URL;
@@ -66,8 +67,11 @@ app.post(
   '/api/:challenge',
   async (req: express.Request, res: express.Response) => {
     try {
-      const challenge = req.params.challenge;
-      // check challenge against dictionary
+      const challengeName = req.params.challenge;
+      const challenge = cdata[req.params.challenge];
+      if (!challenge) {
+        res.status(400).send({ success: false, error: 'unknown challenge' });
+      }
 
       const r = req.body as StartRequest;
       const deployerPublicKey = PublicKey.fromBase58(r.auth.publicKey);
@@ -129,7 +133,7 @@ app.post(
       // log to db (overwrite)
       const tracker = pb.collection('tracker');
       const clist = await tracker.getFullList({
-        filter: `publicKey='${deployerPublicKey.toBase58()}' && challengeName='${challenge}'`,
+        filter: `publicKey='${deployerPublicKey.toBase58()}' && challengeName='${challengeName}'`,
       });
 
       console.log(clist);
@@ -144,7 +148,7 @@ app.post(
       } else {
         await tracker.create({
           publicKey: deployerPublicKey.toBase58(),
-          challengeName: challenge,
+          challengeName: challengeName,
           startTime: new Date(Date.now()),
           captureTime: 0,
           score: 0,
@@ -170,38 +174,34 @@ app.put(
   '/api/:challenge',
   async (req: express.Request, res: express.Response) => {
     try {
-      // const challenge = req.params.challenge;
-      // check challenge against dictionary
+      const challenge = cdata[req.params.challenge];
+      if (!challenge) {
+        res.status(400).send({ success: false, error: 'unknown challenge' });
+      }
 
       const r = req.body as CaptureRequest;
       const contractId = r.contractId;
 
-      //TODO: check challenge status and update db
+      // check challenge status
       let { account } = await fetchAccount(
         { publicKey: contractId },
         endpointUrl
       );
       const state = account?.zkapp?.appState;
       console.log(contractId, state, account);
-      const flagpos = 1;
+      const flagpos = challenge.flagPosition;
       const flagarr = state?.[flagpos]?.value?.[1];
-      const targetArr = num2Arr(111111n);
+      const targetArr = num2Arr(challenge.flagNumber);
       if (JSON.stringify(flagarr) != JSON.stringify(targetArr)) {
-        console.log(
-          'check flag',
-          JSON.stringify(flagarr),
-          JSON.stringify(targetArr)
-        );
         res.send({ success: false, error: 'flag not caught yet' });
         return;
       }
 
-      // log to db
+      // update to db
       const tracker = pb.collection('tracker');
       const citem = await tracker.getFirstListItem(
         `contractId='${contractId}'`
       );
-
       await tracker.update(citem.id, {
         captureTime: new Date(Date.now()),
         score: 1,
