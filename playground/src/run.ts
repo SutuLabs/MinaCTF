@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { fetchAccount, Mina, PrivateKey, PublicKey, VerificationKey } from "snarkyjs";
+import { fetchAccount, Mina, PrivateKey, PublicKey } from "snarkyjs";
 import { CheckinContract } from "../src/checkin.js";
 
 const endpointUrl = process.env.ENDPOINT_URL ?? "http://berkeley.mina.sutulabs.com/graphql";
@@ -8,14 +8,18 @@ Mina.setActiveInstance(Berkeley);
 
 const deployTransactionFee = 100_000_000;
 
-const zkAppPublicKey = PublicKey.fromBase58("B62qmEAnabuteEquj7Lo5YhDB6JQJwELRZp55SYpnnuaQudtgmLqW8z");
-
 await (async function run() {
+  if (!process.env.CONTRACT_ID) {
+    console.log("set CONTRACT_ID in .env file first.");
+    return;
+  }
+
   if (!process.env.PRIVATE_KEY) {
     console.log("set PRIVATE_KEY in .env file first.");
     return;
   }
 
+  const zkAppPublicKey = PublicKey.fromBase58(process.env.CONTRACT_ID);
   const deployerPrivateKey = PrivateKey.fromBase58(process.env.PRIVATE_KEY);
   const deployerPublicKey = deployerPrivateKey.toPublicKey();
   let zkapp = new CheckinContract(zkAppPublicKey);
