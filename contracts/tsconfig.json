@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2020",
-    "module": "es2022",
+    "module": "esnext",
     "lib": [
       "dom",
       "esnext"
@@ -20,6 +20,7 @@
     "declaration": true,
     "sourceMap": true,
     "noFallthroughCasesInSwitch": true,
+    "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true
   },
   "include": [

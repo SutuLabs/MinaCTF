@@ -17,6 +17,7 @@
     "build": "tsc",
     "buildw": "tsc --watch",
     "serve": "nodemon server/server.ts",
+    "compile": "ts-node server/compile.ts server/vkey.json",
     "coverage": "node --experimental-vm-modules --experimental-wasm-threads node_modules/jest/bin/jest.js --coverage",
     "format": "prettier --write --ignore-unknown **/*",
     "test": "node --experimental-vm-modules --experimental-wasm-threads node_modules/jest/bin/jest.js --verbose",
