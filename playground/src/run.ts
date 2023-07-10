@@ -1,8 +1,8 @@
 import "dotenv/config";
 import { fetchAccount, Mina, PrivateKey, PublicKey } from "snarkyjs";
-import { CheckinContract } from "../src/checkin.js";
+import { CheckinContract } from "./checkin.js";
 
-const endpointUrl = process.env.ENDPOINT_URL ?? "http://berkeley.mina.sutulabs.com/graphql";
+const endpointUrl = process.env.ENDPOINT_URL ?? "https://proxy.berkeley.minaexplorer.com/graphql";
 const Berkeley = Mina.Network(endpointUrl);
 Mina.setActiveInstance(Berkeley);
 
@@ -50,6 +50,7 @@ await (async function run() {
 
   console.log("Creating transaction for zkapp", zkAppPublicKey.toBase58());
   let transaction = await Mina.transaction({ sender: deployerPublicKey, fee: deployTransactionFee }, () => {
+    // Modify your code here
     zkapp.play();
   });
 
@@ -59,7 +60,7 @@ await (async function run() {
   console.log("Signing transaction...");
   transaction.sign([deployerPrivateKey]);
 
-  console.log("Sending the deploy transaction...");
+  console.log("Sending the transaction...");
   const res = await transaction.send();
   const hash = res.hash();
   if (hash === undefined) {

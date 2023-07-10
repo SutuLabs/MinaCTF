@@ -103,6 +103,12 @@
               Step2: Read the contract code, try to work out the challenge, and
               let flag field filled with right value.
             </p>
+            <q-btn
+              class="q-my-md full-width"
+              @click="download()"
+              color="primary"
+              label="Download Project"
+            />
             <p class="q-my-md">
               Step3: Click "Complete" button to ask server check your solution.
             </p>
@@ -151,6 +157,8 @@ import {
   challengeData,
   ChallengeEntity,
 } from 'app/../contracts/server/challengeData';
+import { saveAs } from 'file-saver';
+import { packPlaygroundProject } from 'src/services/playgroundPacker';
 
 const endpointUrl = 'http://berkeley.mina.sutulabs.com/graphql';
 
@@ -301,6 +309,14 @@ async function submit() {
   } finally {
     isSubmitting.value = false;
   }
+}
+
+function download() {
+  packPlaygroundProject(challengeName, contractId.value).then(function (
+    content
+  ) {
+    saveAs(content, challengeName + '.zip');
+  });
 }
 
 function num2Arr(number: bigint, length = 32): Uint8Array {
