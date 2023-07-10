@@ -3,6 +3,7 @@ import {
   CaptureRequest,
   CaptureResponse,
   ChallengeStatusResponse,
+  ScoreListResponse,
   StartRequest,
   StartResponse,
 } from 'app/../contracts/server/model';
@@ -90,9 +91,8 @@ export async function getStatus(
         (await resp.text())
     );
   }
-  const respjson = (await resp.json()) as ChallengeStatusResponse;
 
-  return respjson;
+  return (await resp.json()) as ChallengeStatusResponse;
 }
 
 export async function submitCapture(contractId: string, challenge: string) {
@@ -115,7 +115,25 @@ export async function submitCapture(contractId: string, challenge: string) {
         (await resp.text())
     );
   }
-  const ret = (await resp.json()) as CaptureResponse;
 
-  return ret;
+  return (await resp.json()) as CaptureResponse;
+}
+
+export async function getScoreList(): Promise<ScoreListResponse> {
+  const resp = await fetch(rpcUrl + 'api/score/list', {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+    },
+  });
+  if (resp.status != 200) {
+    throw new Error(
+      'NETWORK_ERROR: ' +
+        resp.status.toString() +
+        '\nERROR: ' +
+        (await resp.text())
+    );
+  }
+
+  return (await resp.json()) as ScoreListResponse;
 }

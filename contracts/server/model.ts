@@ -37,6 +37,13 @@ export interface ChallengeStatusResponse {
   challenges: ChallengeStatusEntity[];
 }
 
+export interface ScoreEntity {
+  username?: string;
+  publicKey: string;
+  score: number;
+  challenge: string;
+}
+
 export interface ScoreListResponse {
-  scores: { username: string; score: number }[];
+  scores: ScoreEntity[];
 }

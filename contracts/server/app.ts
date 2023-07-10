@@ -11,6 +11,7 @@ import {
   CaptureRequest,
   CaptureResponse,
   ChallengeStatusResponse,
+  ScoreListResponse,
 } from './model';
 import { challengeData as cdata } from './challengeData';
 // import 'cross-fetch/polyfill';
@@ -215,6 +216,30 @@ app.get(
           startTime: new Date(_.startTime).getTime(),
           captureTime: new Date(_.captureTime).getTime(),
           name: _.challengeName,
+        })),
+      };
+      res.send(ret);
+    } catch (err) {
+      console.warn(err);
+      res.status(500).send({
+        success: false,
+        error: err instanceof Error ? err.message : err,
+      });
+    }
+  }
+);
+
+app.get(
+  '/api/score/list',
+  async (req: express.Request, res: express.Response) => {
+    try {
+      const tracker = pb.collection('tracker');
+      const clist = await tracker.getFullList();
+      const ret: ScoreListResponse = {
+        scores: clist.map((_) => ({
+          score: _.score,
+          publicKey: _.publicKey,
+          challenge: _.challengeName,
         })),
       };
       res.send(ret);
