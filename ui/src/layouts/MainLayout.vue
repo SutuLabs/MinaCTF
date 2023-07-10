@@ -15,7 +15,12 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
+    <q-drawer
+      v-model="leftDrawerOpen"
+      show-if-above
+      bordered
+      class="column justify-between no-wrap"
+    >
       <q-list>
         <q-item-label header> Navigation </q-item-label>
 
@@ -25,6 +30,22 @@
           v-bind="link"
         />
       </q-list>
+      <q-item class="col-grow"></q-item>
+      <q-item class="justify-center">
+        <div class="text-center">
+          Created with ❤️ by
+          <a
+            href="https://github.com/SutuLabs"
+            target="_blank"
+            class="decoration-none text-light-blue-14"
+          >
+            SutuLabs
+          </a>
+
+          <br />
+          Version: {{ version ?? 'unknown' }}
+        </div>
+      </q-item>
     </q-drawer>
 
     <q-page-container>
@@ -38,6 +59,8 @@ import { ref } from 'vue';
 import EssentialLink, {
   EssentialLinkProps,
 } from 'components/EssentialLink.vue';
+
+const version = process.env.VUE_APP_VERSION;
 
 const essentialLinks: EssentialLinkProps[] = [
   {
@@ -78,3 +101,9 @@ function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value;
 }
 </script>
+
+<style>
+.decoration-none {
+  text-decoration: none;
+}
+</style>
