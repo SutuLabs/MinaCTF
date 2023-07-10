@@ -1,24 +1,18 @@
 import './config';
-import express, { response } from 'express';
-import {
-  fetchAccount,
-  Mina,
-  PrivateKey,
-  PublicKey,
-  VerificationKey,
-} from 'snarkyjs';
+import express from 'express';
+import { fetchAccount, Mina, PrivateKey, PublicKey } from 'snarkyjs';
 import { CheckinContract } from '../src/checkin.js';
-import fs from 'fs';
-import {
-  deploy,
-  getContractTx,
-  loopUntilAccountExists,
-  tryGetAccount,
-} from './utils';
+import { authenticate, getContractTx, num2Arr, tryGetAccount } from './utils';
 import cors from 'cors';
 import PocketBase from 'pocketbase';
+import {
+  StartRequest,
+  StartResponse,
+  CaptureRequest,
+  CaptureResponse,
+  ChallengeStatusResponse,
+} from './model';
 // import 'cross-fetch/polyfill';
-const { default: Signer } = await import('mina-signer');
 
 const pbUrl = process.env.PB_URL;
 const pbUsername = process.env.PB_USERNAME;
@@ -64,217 +58,9 @@ app.use(express.json({ limit: '3mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
-interface DeployRequest {
-  contract?: string;
-  deployerPrivateKey?: string;
-  zkAppPrivateKey?: string;
-}
-
 app.get('/version', async (_req: express.Request, res: express.Response) => {
   res.send(JSON.stringify({ version: '0.1' }));
 });
-
-app.post('/deploy', async (req: express.Request, res: express.Response) => {
-  try {
-    const r = req.body as DeployRequest;
-
-    const transactionFee = 100_000_000;
-
-    // const deployAlias = process.argv[2];
-    // const deployerKeysFileContents = fs.readFileSync("keys/" + deployAlias + ".json", "utf8");
-    // const deployerPrivateKeyBase58 = JSON.parse(deployerKeysFileContents).privateKey;
-    // const deployerPrivateKey = PrivateKey.fromBase58(deployerPrivateKeyBase58);
-    // const deployerPublicKey = deployerPrivateKey.toPublicKey();
-
-    const deployerPrivateKey = r.deployerPrivateKey
-      ? PrivateKey.fromBase58(r.deployerPrivateKey)
-      : PrivateKey.random();
-    const deployerPublicKey = deployerPrivateKey.toPublicKey();
-
-    const zkAppPrivateKey = r.zkAppPrivateKey
-      ? PrivateKey.fromBase58(r.zkAppPrivateKey)
-      : PrivateKey.random();
-
-    // ----------------------------------------------------
-
-    let account = await tryGetAccount({
-      account: deployerPublicKey,
-      isZkAppAccount: false,
-    });
-
-    if (!account) {
-      const msg =
-        'Deployer account does not exist. ' +
-        (!r.deployerPrivateKey
-          ? `Generated private key is ${deployerPrivateKey.toBase58()}.`
-          : '') +
-        'Request funds at faucet https://berkeley.minaexplorer.com/faucet or ' +
-        'https://faucet.minaprotocol.com/?address=' +
-        deployerPublicKey.toBase58();
-      console.log(msg);
-      res.status(400).send(JSON.stringify({ success: false, error: msg }));
-      return;
-    }
-
-    console.log(
-      `Using fee payer account with nonce ${account.nonce}, balance ${account.balance}`
-    );
-
-    // ----------------------------------------------------
-
-    const zkAppPublicKey = zkAppPrivateKey.toPublicKey();
-    let zkapp = new CheckinContract(zkAppPublicKey);
-
-    // Programmatic deploy:
-    //   Besides the CLI, you can also create accounts programmatically. This is useful if you need
-    //   more custom account creation - say deploying a zkApp to a different key than the fee payer
-    //   key, programmatically parameterizing a zkApp before initializing it, or creating Smart
-    //   Contracts programmatically for users as part of an application.
-    const hash = await deploy(
-      deployerPrivateKey,
-      zkAppPrivateKey,
-      zkapp,
-      verificationKey
-    );
-
-    res.send(
-      JSON.stringify({
-        zkAppPrivateKey: r.zkAppPrivateKey
-          ? undefined
-          : zkAppPrivateKey.toBase58(),
-        hash,
-        url: 'https://berkeley.minaexplorer.com/transaction/' + hash,
-      })
-    );
-
-    // await loopUntilAccountExists({
-    //   account: zkAppPublicKey,
-    //   eachTimeNotExist: () => console.log("waiting for zkApp account to be deployed..."),
-    //   isZkAppAccount: true,
-    // });
-
-    // let num = (await zkapp.num.fetch())!;
-    // console.log(`current value of num is ${num}`);
-
-    // ----------------------------------------------------
-
-    // let transaction = await Mina.transaction({ sender: deployerPublicKey, fee: transactionFee }, () => {
-    //   zkapp.update(num.mul(num));
-    // });
-
-    // // fill in the proof - this can take a while...
-    // console.log("Creating an execution proof...");
-    // let time0 = performance.now();
-    // await transaction.prove();
-    // let time1 = performance.now();
-    // console.log(`creating proof took ${(time1 - time0) / 1e3} seconds`);
-
-    // // sign transaction with the deployer account
-    // transaction.sign([deployerPrivateKey]);
-
-    // console.log("Sending the transaction...");
-    // let pendingTransaction = await transaction.send();
-
-    // // ----------------------------------------------------
-
-    // if (!pendingTransaction.isSuccess) {
-    //   console.log("error sending transaction (see above)");
-    //   process.exit(0);
-    // }
-
-    // console.log(
-    //   `See transaction at https://berkeley.minaexplorer.com/transaction/${pendingTransaction.hash()}
-    //   Waiting for transaction to be included...`
-    // );
-    // await pendingTransaction.wait();
-
-    // console.log(`updated state! ${await zkapp.num.fetch()}`);
-
-    // ----------------------------------------------------
-  } catch (err) {
-    console.warn(err);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    res
-      .status(500)
-      .send(JSON.stringify({ success: false, error: (<any>err).message }));
-  }
-});
-
-app.post('/verify', async (req: express.Request, res: express.Response) => {
-  try {
-    const r = req.body as any;
-
-    const publicKey = r.publicKey;
-    const signature = r.signature;
-    const verifyMessage = r.data;
-    const signer = new Signer({ network: 'testnet' });
-
-    let verifyResult;
-    try {
-      const nextSignature =
-        typeof signature === 'string' ? JSON.parse(signature) : signature;
-      const verifyBody = {
-        data: verifyMessage,
-        publicKey: publicKey,
-        signature: nextSignature,
-      };
-      console.log(verifyBody);
-      verifyResult = signer.verifyMessage(verifyBody);
-    } catch (error) {
-      verifyResult = { error: { message: 'verify failed' } };
-    }
-
-    console.log(verifyResult);
-    res.send(verifyResult);
-  } catch (err) {
-    console.warn(err);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    res
-      .status(500)
-      .send(JSON.stringify({ success: false, error: (<any>err).message }));
-  }
-});
-
-interface AuthEntity {
-  publicKey: string;
-  signature: { field: string; scalar: string };
-  message: string;
-}
-
-interface StartRequest {
-  auth: AuthEntity;
-}
-
-interface StartResponse {
-  tx: string;
-  contractId: string;
-}
-
-interface CaptureRequest {
-  contractId: string;
-}
-
-interface GeneralFeedback {
-  success: boolean;
-  error?: string;
-}
-
-type CaptureResponse = GeneralFeedback;
-
-interface ChallengeStatusResponse {
-  publicKey: string; //base58
-  challenges: {
-    contractId: string;
-    score: number;
-    startTime: number;
-    captureTime: number;
-    name: string;
-  }[];
-}
-
-interface ScoreListResponse {
-  scores: { username: string; score: number }[];
-}
 
 app.post(
   '/api/:challenge',
@@ -372,10 +158,10 @@ app.post(
       res.send(resp);
     } catch (err) {
       console.warn(err);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      res
-        .status(500)
-        .send(JSON.stringify({ success: false, error: (<any>err).message }));
+      res.status(500).send({
+        success: false,
+        error: err instanceof Error ? err.message : err,
+      });
     }
   }
 );
@@ -384,7 +170,7 @@ app.put(
   '/api/:challenge',
   async (req: express.Request, res: express.Response) => {
     try {
-      const challenge = req.params.challenge;
+      // const challenge = req.params.challenge;
       // check challenge against dictionary
 
       const r = req.body as CaptureRequest;
@@ -424,23 +210,13 @@ app.put(
       res.send({ success: true } as CaptureResponse);
     } catch (err) {
       console.warn(err);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      res
-        .status(500)
-        .send(JSON.stringify({ success: false, error: (<any>err).message }));
+      res.status(500).send({
+        success: false,
+        error: err instanceof Error ? err.message : err,
+      });
     }
   }
 );
-
-function num2Arr(number: bigint, length = 32): Uint8Array {
-  let pos = 0;
-  const arr = new Uint8Array(length);
-  while (number > 0) {
-    arr[pos++] = Number(number & 255n);
-    number >>= 8n;
-  }
-  return arr;
-}
 
 app.get(
   '/api/:publicKey',
@@ -466,74 +242,12 @@ app.get(
       res.send(ret);
     } catch (err) {
       console.warn(err);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      res
-        .status(500)
-        .send(JSON.stringify({ success: false, error: (<any>err).message }));
+      res.status(500).send({
+        success: false,
+        error: err instanceof Error ? err.message : err,
+      });
     }
   }
 );
-
-/// legacy
-// app.post(
-//   '/api/user/login',
-//   async (req: express.Request, res: express.Response) => {
-//     try {
-//       const r = req.body as LoginRequest;
-
-//       const publicKey = r.publicKey;
-//       const signature = r.signature;
-//       const verifyMessage = r.message;
-//       const signer = new Signer({ network: 'testnet' });
-
-//       let verifyResult;
-//       try {
-//         const nextSignature =
-//           typeof signature === 'string' ? JSON.parse(signature) : signature;
-//         const verifyBody = {
-//           data: verifyMessage,
-//           publicKey: publicKey,
-//           signature: nextSignature,
-//         };
-//         console.log(verifyBody);
-//         verifyResult = signer.verifyMessage(verifyBody);
-//       } catch (error) {
-//         verifyResult = { error: { message: 'verify failed' } };
-//       }
-
-//       console.log(verifyResult);
-//       res.send(verifyResult);
-//     } catch (err) {
-//       console.warn(err);
-//       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-//       res
-//         .status(500)
-//         .send(JSON.stringify({ success: false, error: (<any>err).message }));
-//     }
-//   }
-// );
-
-function authenticate(auth: AuthEntity): { success: boolean; error?: string } {
-  const publicKey = auth.publicKey;
-  const signature = auth.signature;
-  const verifyMessage = auth.message;
-  const signer = new Signer({ network: 'testnet' });
-
-  let verifyResult;
-  try {
-    const nextSignature =
-      typeof signature === 'string' ? JSON.parse(signature) : signature;
-    const verifyBody = {
-      data: verifyMessage,
-      publicKey: publicKey,
-      signature: nextSignature,
-    };
-    verifyResult = { success: signer.verifyMessage(verifyBody) };
-  } catch (error) {
-    verifyResult = { success: false, error: 'verify failed' };
-  }
-
-  return verifyResult;
-}
 
 export default app;

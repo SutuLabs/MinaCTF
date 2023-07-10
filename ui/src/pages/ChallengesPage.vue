@@ -62,7 +62,7 @@
 import { ref, Ref } from 'vue';
 import { challengeData as challenges } from 'src/services/challengeData';
 import * as contract from 'src/services/contract';
-import { ChallengeStatusEntity } from 'src/services/contract';
+import { ChallengeStatusEntity } from 'app/../contracts/server/model';
 
 const publicKey = ref('');
 const walletExist = ref(false);
