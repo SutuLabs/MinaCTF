@@ -40,7 +40,7 @@ jobs:
       - name: Install Dependencies
         run: yarn
 
-      - name: Install Dependencies
+      - name: Change version number
         run: |
           sed -i 's/0.1/${VERSION}/' .env
       - name: Build
