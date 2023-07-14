@@ -3,7 +3,6 @@ version: '3'
 services:
   pocketbase:
     image: ghcr.io/muchobien/pocketbase:0.16.7
-    container_name: pocketbase
     restart: always
     ports:
       - '8090:8090'
