@@ -3,13 +3,13 @@ name: build-server
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - "contracts/**"
       - ".github/workflows/**"
   pull_request:
     branches:
-      - master
+      - main
     paths:
       - "contracts/**"
       - ".github/workflows/**"

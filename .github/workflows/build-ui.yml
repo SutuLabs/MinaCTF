@@ -3,14 +3,14 @@ name: build-ui
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - "contracts/src/**"
       - "ui/**"
       - ".github/workflows/**"
   pull_request:
     branches:
-      - master
+      - main
     paths:
       - "contracts/src/**"
       - "ui/**"
