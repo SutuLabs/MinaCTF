@@ -17,7 +17,7 @@ services:
     restart: always
     environment:
       - SHOW_LOG=true
-      - PORT=3030
+      - SERVER_PORT=3030
       - MAX_THREAD=1
       - PB_EP_URL=http://pocketbase:8090
       - PB_USERNAME=bot@sutu.tech
