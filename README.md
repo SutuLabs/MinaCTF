@@ -55,6 +55,10 @@ gantt
   - Scoreboard
     - List
 
+## TODOs
+
+- [ ] Message signing when deploy need to check validity by time
+
 ## FAQ
 
 ### Is there a way to cache/skip compiling?

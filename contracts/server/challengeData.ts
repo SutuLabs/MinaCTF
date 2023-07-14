@@ -18,15 +18,15 @@ export const challengeData: { [key: string]: ChallengeEntity } = {
     difficulty: 'beginner',
     point: 100,
   },
-  maze: {
-    flagPosition: 3,
-    flagNumber: 111111n,
-    title: 'Maze',
-    caption: 'Find a way',
-    icon: 'extension',
-    difficulty: 'expert',
-    point: 300,
-  },
+  // maze: {
+  //   flagPosition: 3,
+  //   flagNumber: 111111n,
+  //   title: 'Maze',
+  //   caption: 'Find a way',
+  //   icon: 'extension',
+  //   difficulty: 'expert',
+  //   point: 300,
+  // },
 };
 
 export default {};
