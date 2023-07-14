@@ -7,14 +7,14 @@ on:
     paths:
       - "contracts/src/**"
       - "ui/**"
-      - ".github/workflows/**"
+      - ".github/workflows/build-ui.yml"
   pull_request:
     branches:
       - main
     paths:
       - "contracts/src/**"
       - "ui/**"
-      - ".github/workflows/**"
+      - ".github/workflows/build-ui.yml"
 
 env:
   VERSION: 0.1.${{ github.run_number }}
