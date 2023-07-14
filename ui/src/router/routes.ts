@@ -24,7 +24,7 @@ const routes: RouteRecordRaw[] = [
         component: () => import('pages/ScoreboardPage.vue'),
       },
       { path: 'login', component: () => import('pages/LoginPage.vue') },
-      { path: 'profile', component: () => import('pages/profilePage.vue') },
+      { path: 'profile', component: () => import('pages/ProfilePage.vue') },
     ],
   },
 
