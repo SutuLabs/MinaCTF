@@ -49,6 +49,7 @@ class CheckinContract extends SmartContract {
     throw new Error('unknown contract');
   }
 
+  const pe = 'proce' + 'ss.env'; // escaping packing
   zip.file(
     'src/run.ts',
     `
@@ -56,25 +57,25 @@ import "dotenv/config";
 import { fetchAccount, Mina, PrivateKey, PublicKey } from "snarkyjs";
 import { ${contractName} } from "./contract.js";
 
-const endpointUrl = process.env.ENDPOINT_URL ?? "https://proxy.berkeley.minaexplorer.com/graphql";
+const endpointUrl = ${pe}.ENDPOINT_URL ?? "https://proxy.berkeley.minaexplorer.com/graphql";
 const Berkeley = Mina.Network(endpointUrl);
 Mina.setActiveInstance(Berkeley);
 
 const deployTransactionFee = 100_000_000;
 
 await (async function run() {
-  if (!process.env.CONTRACT_ID) {
+  if (!${pe}.CONTRACT_ID) {
     console.log("set CONTRACT_ID in .env file first.");
     return;
   }
 
-  if (!process.env.PRIVATE_KEY) {
+  if (!${pe}.PRIVATE_KEY) {
     console.log("set PRIVATE_KEY in .env file first.");
     return;
   }
 
-  const zkAppPublicKey = PublicKey.fromBase58(process.env.CONTRACT_ID);
-  const deployerPrivateKey = PrivateKey.fromBase58(process.env.PRIVATE_KEY);
+  const zkAppPublicKey = PublicKey.fromBase58(${pe}.CONTRACT_ID);
+  const deployerPrivateKey = PrivateKey.fromBase58(${pe}.PRIVATE_KEY);
   const deployerPublicKey = deployerPrivateKey.toPublicKey();
   let zkapp = new ${contractName}(zkAppPublicKey);
 
