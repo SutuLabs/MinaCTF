@@ -4,4 +4,6 @@
   </suspense>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import './services/registerCoiServcieWorker';
+</script>
