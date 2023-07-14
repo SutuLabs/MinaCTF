@@ -64,6 +64,13 @@ const version = process.env.VUE_APP_VERSION;
 
 const essentialLinks: EssentialLinkProps[] = [
   {
+    title: 'Home',
+    caption: 'Overview',
+    icon: 'home',
+    to: '/',
+    exact: true,
+  },
+  {
     title: 'Challenges',
     caption: 'Start here',
     icon: 'receipt_long',

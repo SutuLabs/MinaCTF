@@ -5,11 +5,9 @@
     :target="to ? undefined : '_blank'"
     :to="to"
     :href="to ? undefined : link"
+    :exact="exact"
   >
-    <q-item-section
-      v-if="icon"
-      avatar
-    >
+    <q-item-section v-if="icon" avatar>
       <q-icon :name="icon" />
     </q-item-section>
 
@@ -27,11 +25,13 @@ export interface EssentialLinkProps {
   link?: string;
   icon?: string;
   to?: string;
+  exact?: boolean;
 }
 withDefaults(defineProps<EssentialLinkProps>(), {
   caption: '',
   link: '#',
   icon: '',
   to: '',
+  exact: false,
 });
 </script>
