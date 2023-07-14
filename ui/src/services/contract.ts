@@ -9,7 +9,7 @@ import {
 } from 'app/../contracts/server/model';
 
 const transactionFee = 0.1;
-const rpcUrl = 'http://localhost:3030/';
+const rpcUrl = process.env.VUE_APP_BACKEND_RPC ?? 'http://localhost:3030/';
 
 export async function deploy(
   onstage?: (stage: 'sign' | 'fetch' | 'send') => void

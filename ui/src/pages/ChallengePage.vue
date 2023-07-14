@@ -160,7 +160,9 @@ import {
 import { saveAs } from 'file-saver';
 import { packPlaygroundProject } from 'src/services/playgroundPacker';
 
-const endpointUrl = 'http://berkeley.mina.sutulabs.com/graphql';
+const endpointUrl =
+  process.env.VUE_APP_MINA_NETWORK ??
+  'https://proxy.berkeley.minaexplorer.com/graphql';
 
 const route = useRoute();
 const challengeName = route.params.id as string;
