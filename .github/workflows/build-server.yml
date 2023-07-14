@@ -3,13 +3,13 @@ name: build-server
 on:
   push:
     branches:
-      - main
+      - disabled
     paths:
       - "contracts/**"
       - ".github/workflows/build-server.yml"
   pull_request:
     branches:
-      - main
+      - disabled
     paths:
       - "contracts/**"
       - ".github/workflows/build-server.yml"
