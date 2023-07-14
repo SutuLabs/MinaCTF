@@ -139,7 +139,13 @@
             active-icon="check"
             active-color="green"
           >
-            Congraduations, you have done the challenge.
+            Congratulations, you have done the challenge.
+            <q-btn
+              class="q-my-md full-width"
+              @click="reset()"
+              color="negative"
+              label="Reset and try again"
+            />
           </q-step>
         </q-stepper>
       </div>
@@ -148,7 +154,7 @@
 </template>
 
 <script setup lang="ts">
-import { QStepper } from 'quasar';
+import { QStepper, useQuasar } from 'quasar';
 import { fetchAccount } from 'snarkyjs';
 import * as contract from 'src/services/contract';
 import { ref, Ref } from 'vue';
@@ -160,6 +166,7 @@ import {
 import { saveAs } from 'file-saver';
 import { packPlaygroundProject } from 'src/services/playgroundPacker';
 
+const $q = useQuasar();
 const endpointUrl =
   process.env.VUE_APP_MINA_NETWORK ??
   'https://proxy.berkeley.minaexplorer.com/graphql';
@@ -318,6 +325,17 @@ function download() {
     content
   ) {
     saveAs(content, challengeName + '.zip');
+  });
+}
+
+function reset() {
+  $q.dialog({
+    title: 'Confirm',
+    message: 'Reset challenge will also clear your point gained, confirm?',
+    cancel: true,
+    persistent: true,
+  }).onOk(() => {
+    step.value = 1;
   });
 }
 
