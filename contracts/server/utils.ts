@@ -13,7 +13,9 @@ import { AuthEntity } from './model';
 const { default: Signer } = await import('mina-signer');
 
 const deployTransactionFee = 100_000_000;
-const endpointUrl = 'http://berkeley.mina.sutulabs.com/graphql';
+const endpointUrl =
+  process.env.VUE_APP_MINA_NETWORK ??
+  'https://proxy.berkeley.minaexplorer.com/graphql';
 const Berkeley = Mina.Network(endpointUrl);
 Mina.setActiveInstance(Berkeley);
 

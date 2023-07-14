@@ -1,0 +1,10 @@
+.env
+Dockerfile
+docker-compose.yml
+*.*ignore
+README.md
+pbdata/
+node_modules/
+build/
+jest*
+nodemon.json

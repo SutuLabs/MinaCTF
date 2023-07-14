@@ -17,23 +17,24 @@ import { challengeData as cdata } from './challengeData';
 // import 'cross-fetch/polyfill';
 import vkey from './vkey.json' assert { type: 'json' };
 
-const pbUrl = process.env.PB_URL;
+const pbUrl = process.env.PB_EP_URL;
 const pbUsername = process.env.PB_USERNAME;
 const pbPassword = process.env.PB_PASSWORD;
 if (!pbUrl || !pbUsername || !pbPassword) {
   throw new Error(
-    'Environment variable PB_URL, PB_USERNAME, PB_PASSWORD must be assigned'
+    'Environment variable PB_EP_URL, PB_USERNAME, PB_PASSWORD must be assigned'
   );
 }
+console.log(`Connecting PocketBase using ${pbUrl} and ${pbUsername}`);
 const pb = new PocketBase(pbUrl);
 await pb.collection('users').authWithPassword(pbUsername, pbPassword);
 
-const endpointUrl = 'http://berkeley.mina.sutulabs.com/graphql';
+const endpointUrl =
+  process.env.MINA_EP_URL ?? 'https://proxy.berkeley.minaexplorer.com/graphql';
+console.log(`Connecting Mina network using ${endpointUrl}`);
 
 const verificationKey = vkey['checkin'];
-const Berkeley = Mina.Network(
-  'https://proxy.berkeley.minaexplorer.com/graphql'
-);
+const Berkeley = Mina.Network(endpointUrl);
 Mina.setActiveInstance(Berkeley);
 
 const app: express.Express = express();

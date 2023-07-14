@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  pocketbase:
+    image: ghcr.io/muchobien/pocketbase:0.16.7
+    container_name: pocketbase
+    restart: always
+    ports:
+      - '8090:8090'
+    volumes:
+      - ./pbdata:/pb_data
+    #  - ./public:/pb_public #optional
+
+  ctfserver:
+    image: wizicer/ctf-server:latest
+    ports:
+      - '3030:3030'
+    restart: always
+    environment:
+      - SHOW_LOG=true
+      - PORT=3030
+      - MAX_THREAD=1
+      - PB_EP_URL=http://pocketbase:8090
+      - PB_USERNAME=bot@sutu.tech
+      - PB_PASSWORD=12345678
