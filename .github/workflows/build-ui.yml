@@ -1,0 +1,57 @@
+name: build-ui
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "contracts/src/**"
+      - "ui/**"
+      - ".github/workflows/**"
+  pull_request:
+    branches:
+      - master
+    paths:
+      - "contracts/src/**"
+      - "ui/**"
+      - ".github/workflows/**"
+
+env:
+  VERSION: 0.1.${{ github.run_number }}
+
+defaults:
+  run:
+    working-directory: ./ui
+
+jobs:
+  build-pawket:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: "yarn"
+          cache-dependency-path: "yarn.lock"
+
+      - name: Install Dependencies
+        run: yarn
+
+      - name: Install Dependencies
+        run: |
+          sed -i 's/0.1/${VERSION}/' .env
+      - name: Build
+        run: |
+          yarn build
+
+      - name: version
+        run: |
+          echo ${VERSION}>dist/spa/version.txt
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ui
+          path: dist/spa

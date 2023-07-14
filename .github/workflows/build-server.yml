@@ -1,0 +1,52 @@
+name: build-server
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "contracts/**"
+      - ".github/workflows/**"
+  pull_request:
+    branches:
+      - master
+    paths:
+      - "contracts/**"
+      - ".github/workflows/**"
+
+env:
+  VERSION: 0.1.${{ github.run_number }}
+
+defaults:
+  run:
+    working-directory: ./contracts
+
+jobs:
+  build-server:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: "npm"
+          cache-dependency-path: "package-lock.json"
+
+      - name: Install Dependencies
+        run: npm install
+
+      # - name: Build
+      #   run: |
+      #     npm run build:server
+
+      - name: version
+        run: |
+          echo ${VERSION}>version.txt
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: server
+          path: ./
