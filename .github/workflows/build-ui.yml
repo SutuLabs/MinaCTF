@@ -46,7 +46,7 @@ jobs:
 
       - name: Install Dependencies (contracts)
         run: yarn
-        working-directory: ../contracts/
+        working-directory: contracts/
 
       - name: Install Dependencies
         run: yarn
