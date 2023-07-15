@@ -8,9 +8,9 @@ export interface StartRequest {
   auth: AuthEntity;
 }
 
-export interface StartResponse {
-  tx: string;
-  contractId: string;
+export interface StartResponse extends GeneralFeedback {
+  tx?: string;
+  contractId?: string;
 }
 
 export interface CaptureRequest {

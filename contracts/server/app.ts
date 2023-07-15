@@ -1,28 +1,18 @@
 import './config';
 import express from 'express';
-import { fetchAccount, Mina, PrivateKey, PublicKey } from 'snarkyjs';
-import { CheckinContract } from '../src/checkin.js';
-import { authenticate, getContractTx, num2Arr, tryGetAccount } from './utils';
+import { Mina } from 'snarkyjs';
 import cors from 'cors';
 import PocketBase from 'pocketbase';
-import {
-  StartRequest,
-  StartResponse,
-  CaptureRequest,
-  CaptureResponse,
-  ChallengeStatusResponse,
-  ScoreListResponse,
-} from './model';
-import { challengeData as cdata } from './challengeData';
 // import 'cross-fetch/polyfill';
-import vkey from './vkey.json' assert { type: 'json' };
+import { checkChallenge, createChallenge } from './services/challenge';
+import { getPkChallenges, getScoreList } from './services/score';
 
 const pbUrl = process.env.PB_EP_URL;
 const pbUsername = process.env.PB_USERNAME;
 const pbPassword = process.env.PB_PASSWORD;
 if (!pbUrl || !pbUsername || !pbPassword) {
   throw new Error(
-    'Environment variable PB_EP_URL, PB_USERNAME, PB_PASSWORD must be assigned'
+    'Env./services/modelt variable PB_EP_URL, PB_USERNAME, PB_PASSWORD must be assigned'
   );
 }
 console.log(`Connecting PocketBase using ${pbUrl} and ${pbUsername}`);
@@ -33,7 +23,6 @@ const endpointUrl =
   process.env.MINA_EP_URL ?? 'https://proxy.berkeley.minaexplorer.com/graphql';
 console.log(`Connecting Mina network using ${endpointUrl}`);
 
-const verificationKey = vkey['checkin'];
 const Berkeley = Mina.Network(endpointUrl);
 Mina.setActiveInstance(Berkeley);
 
@@ -46,212 +35,26 @@ app.get('/version', async (_req: express.Request, res: express.Response) => {
   res.send(JSON.stringify({ version: '0.1' }));
 });
 
-app.post(
-  '/api/:challenge',
-  async (req: express.Request, res: express.Response) => {
-    try {
-      const challengeName = req.params.challenge;
-      const challenge = cdata[req.params.challenge];
-      if (!challenge) {
-        res.status(400).send({ success: false, error: 'unknown challenge' });
-      }
-
-      const r = req.body as StartRequest;
-      const deployerPublicKey = PublicKey.fromBase58(r.auth.publicKey);
-
-      const a = authenticate(r.auth);
-      if (!a.success) {
-        console.log('error authenticate user', a);
-        res.send({
-          success: false,
-          error: 'failed to authenticate user, maybe signature is wrong.',
-        });
-        return;
-      }
-
-      // check deployer pk balance
-
-      let account = await tryGetAccount({
-        account: deployerPublicKey,
-        isZkAppAccount: false,
-      });
-
-      if (!account) {
-        const msg =
-          'Deployer account does not exist. ' +
-          'Request funds at faucet https://berkeley.minaexplorer.com/faucet or ' +
-          'https://faucet.minaprotocol.com/?address=' +
-          deployerPublicKey.toBase58();
-        res.status(400).send(JSON.stringify({ success: false, error: msg }));
-        return;
-      }
-      console.log(
-        `Using fee payer account with nonce ${account.nonce}, balance ${account.balance}`
-      );
-
-      // create tx
-      const zkAppPrivateKey = PrivateKey.random(); // maybe consider deterministic private key
-      const zkAppPublicKey = zkAppPrivateKey.toPublicKey();
-      // select from challenge
-      let zkapp = new CheckinContract(zkAppPublicKey);
-
-      const ctx = await getContractTx(
-        deployerPublicKey,
-        zkAppPrivateKey,
-        zkapp,
-        verificationKey
-        // (zkapp) => {
-        //   const app = zkapp as CheckinContract;
-        //   app.startGame();
-        // }
-      );
-      if (!ctx.success || !ctx.tx) {
-        res
-          .status(500)
-          .send({ success: false, error: 'failed to generate tx' });
-        return;
-      }
-
-      // log to db (overwrite)
-      const tracker = pb.collection('tracker');
-      const clist = await tracker.getFullList({
-        filter: `publicKey='${deployerPublicKey.toBase58()}' && challengeName='${challengeName}'`,
-      });
-
-      if (clist.length > 0) {
-        const citem = clist[0];
-        await tracker.update(citem.id, {
-          startTime: new Date(Date.now()),
-          captureTime: 0,
-          score: 0,
-          contractId: zkAppPublicKey,
-        });
-      } else {
-        await tracker.create({
-          publicKey: deployerPublicKey.toBase58(),
-          challengeName: challengeName,
-          startTime: new Date(Date.now()),
-          captureTime: 0,
-          score: 0,
-          contractId: zkAppPublicKey,
-        });
-      }
-      const resp: StartResponse = {
-        tx: ctx.tx,
-        contractId: zkAppPublicKey.toBase58(),
-      };
-      res.send(resp);
-    } catch (err) {
-      console.warn(err);
-      res.status(500).send({
-        success: false,
-        error: err instanceof Error ? err.message : err,
-      });
-    }
-  }
+app.post('/api/:challenge', (req: express.Request, res: express.Response) =>
+  createChallenge(pb, req, res)
 );
 
 app.put(
   '/api/:challenge',
-  async (req: express.Request, res: express.Response) => {
-    try {
-      const challenge = cdata[req.params.challenge];
-      if (!challenge) {
-        res.status(400).send({ success: false, error: 'unknown challenge' });
-      }
-
-      const r = req.body as CaptureRequest;
-      const contractId = r.contractId;
-
-      // check challenge status
-      let { account } = await fetchAccount(
-        { publicKey: contractId },
-        endpointUrl
-      );
-      const state = account?.zkapp?.appState;
-      const flagpos = challenge.flagPosition;
-      const flagarr = state?.[flagpos]?.value?.[1];
-      const targetArr = num2Arr(challenge.flagNumber);
-      if (JSON.stringify(flagarr) != JSON.stringify(targetArr)) {
-        res.send({ success: false, error: 'flag not caught yet' });
-        return;
-      }
-
-      // update to db
-      const tracker = pb.collection('tracker');
-      const citem = await tracker.getFirstListItem(
-        `contractId='${contractId}'`
-      );
-      await tracker.update(citem.id, {
-        captureTime: new Date(Date.now()),
-        score: 1,
-      });
-
-      res.send({ success: true } as CaptureResponse);
-    } catch (err) {
-      console.warn(err);
-      res.status(500).send({
-        success: false,
-        error: err instanceof Error ? err.message : err,
-      });
-    }
-  }
+  async (req: express.Request, res: express.Response) =>
+    checkChallenge(endpointUrl, pb, req, res)
 );
 
 app.get(
   '/api/:publicKey',
-  async (req: express.Request, res: express.Response) => {
-    try {
-      const publicKey = req.params.publicKey; // need to escape to avoid attack
-
-      //   - response: { publicKey: base58(string), challenges: { contractId: string, score: number, startTime: number, captureTime: number }[] }
-      const tracker = pb.collection('tracker');
-      const clist = await tracker.getFullList({
-        filter: `publicKey='${publicKey}'`,
-      });
-      const ret: ChallengeStatusResponse = {
-        publicKey,
-        challenges: clist.map((_) => ({
-          contractId: _.contractId,
-          score: _.score,
-          startTime: new Date(_.startTime).getTime(),
-          captureTime: new Date(_.captureTime).getTime(),
-          name: _.challengeName,
-        })),
-      };
-      res.send(ret);
-    } catch (err) {
-      console.warn(err);
-      res.status(500).send({
-        success: false,
-        error: err instanceof Error ? err.message : err,
-      });
-    }
-  }
+  async (req: express.Request, res: express.Response) =>
+    getPkChallenges(pb, req, res)
 );
 
 app.get(
   '/api/score/list',
-  async (req: express.Request, res: express.Response) => {
-    try {
-      const tracker = pb.collection('tracker');
-      const clist = await tracker.getFullList();
-      const ret: ScoreListResponse = {
-        scores: clist.map((_) => ({
-          score: _.score,
-          publicKey: _.publicKey,
-          challenge: _.challengeName,
-        })),
-      };
-      res.send(ret);
-    } catch (err) {
-      console.warn(err);
-      res.status(500).send({
-        success: false,
-        error: err instanceof Error ? err.message : err,
-      });
-    }
-  }
+  async (req: express.Request, res: express.Response) =>
+    getScoreList(pb, req, res)
 );
 
 export default app;

@@ -140,14 +140,16 @@
             active-color="green"
           >
             Congratulations, you have done the challenge.
-            <q-btn
-              class="q-my-md full-width"
-              @click="reset()"
-              color="negative"
-              label="Reset and try again"
-            />
           </q-step>
         </q-stepper>
+        <q-btn
+          v-if="step != 1"
+          class="q-ma-md float-right"
+          @click="reset()"
+          color="grey"
+          flat
+          label="Reset and try again"
+        />
       </div>
     </template>
   </q-page>
@@ -256,6 +258,9 @@ async function deploy() {
     txHash.value = th;
     checkDeployment();
   } catch (error) {
+    if (error instanceof Error) {
+      $q.notify({ message: error.message, color: 'negative' });
+    }
     isDeploying.value = false;
   }
 }

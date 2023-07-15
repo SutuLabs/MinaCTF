@@ -6,7 +6,7 @@ import {
   ScoreListResponse,
   StartRequest,
   StartResponse,
-} from 'app/../contracts/server/model';
+} from 'app/../contracts/server/services/model';
 
 const transactionFee = 0.1;
 const rpcUrl = process.env.VUE_APP_BACKEND_RPC ?? 'http://localhost:3030/';
@@ -24,15 +24,21 @@ export async function deploy(
   }
 
   const publicKeyBase58: string = (await mina.requestAccounts())[0];
-  const publicKey = PublicKey.fromBase58(publicKeyBase58);
-  console.log('using key', publicKey.toBase58());
 
   const network = await mina.requestNetwork();
-  console.log('network', network);
+  if (network != 'Berkeley') {
+    throw new Error(
+      'Only support Berkeley network now, please switch network first!'
+    );
+  }
+  // console.log('network', network);
 
   onstage?.('sign');
   const signResult = await mina.signMessage({
-    message: 'messages...',
+    message: `Deploy Signature for MinaCTF
+
+Time: ${new Date().toString()}
+Timestamp: ${Date.now()}`,
   });
 
   onstage?.('fetch');
@@ -59,10 +65,14 @@ export async function deploy(
         (await resp.text())
     );
   }
-  const { tx, contractId } = (await resp.json()) as StartResponse;
+  const { tx, contractId, success, error } =
+    (await resp.json()) as StartResponse;
+  if (!success || !tx || !contractId) {
+    throw new Error(error ?? 'unknown error when getting tx');
+  }
 
   onstage?.('send');
-  console.log('requesting send transaction...');
+  // console.log('requesting send transaction...');
   const { hash } = await mina.sendTransaction({
     transaction: tx,
     feePayer: {
@@ -70,7 +80,6 @@ export async function deploy(
       memo: '',
     },
   });
-  console.log(hash);
   return { contractId, txHash: hash };
 }
 

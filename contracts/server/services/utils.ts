@@ -1,3 +1,4 @@
+import { timeStamp } from 'console';
 import {
   PublicKey,
   fetchAccount,
@@ -82,7 +83,12 @@ export async function getContractTx(
   return { success: true, tx };
 }
 
-export function authenticate(auth: AuthEntity): {
+const timestampPrefix = 'Timestamp: ';
+const secondsThreshold = 60;
+export function authenticate(
+  auth: AuthEntity,
+  verifyTimestamp = true
+): {
   success: boolean;
   error?: string;
 } {
@@ -90,6 +96,32 @@ export function authenticate(auth: AuthEntity): {
   const signature = auth.signature;
   const verifyMessage = auth.message;
   const signer = new Signer({ network: 'testnet' });
+
+  // console.log(verifyTimestamp, verifyMessage);
+  if (verifyTimestamp) {
+    const lines = verifyMessage.split('\n');
+    let timestampVerified = false;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.startsWith(timestampPrefix)) {
+        const timestamp = Number(line.slice(timestampPrefix.length));
+        const offset = Date.now() - timestamp;
+        if (isNaN(offset))
+          return { success: false, error: 'wrong timestamp format' };
+
+        if (offset < 0) return { success: false, error: 'time from future' };
+
+        if (offset > secondsThreshold * 1000)
+          return { success: false, error: 'signature expired' };
+
+        timestampVerified = true;
+        break;
+      }
+    }
+
+    if (!timestampVerified)
+      return { success: false, error: 'timestamp not found' };
+  }
 
   let verifyResult;
   try {
