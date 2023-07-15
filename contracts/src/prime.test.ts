@@ -24,7 +24,6 @@ describe('prime', () => {
     let txn = await Mina.transaction(playerPublicKey, () => {
       AccountUpdate.fundNewAccount(playerPublicKey);
       zkApp.deploy();
-      zkApp.startGame(number);
     });
     await txn.prove();
     await txn.sign([zkAppPrivateKey, playerPrivateKey]).send();

@@ -2,6 +2,7 @@
  * This file defines the `Prime` smart contract and the helpers it needs.
  */
 const FLAG = 111111;
+const NUMBER = 17;
 
 import { Field, State, SmartContract, state, method, Circuit } from 'snarkyjs';
 
@@ -15,13 +16,8 @@ class PrimeContract extends SmartContract {
 
   init() {
     super.init();
-    this.number.set(Field(0));
     this.flag.set(Field(0));
-  }
-
-  @method startGame(number: Field) {
-    this.number.assertEquals(Field(0));
-    this.number.set(number);
+    this.number.set(Field(NUMBER));
   }
 
   @method play(x: Field, y: Field) {
