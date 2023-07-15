@@ -18,6 +18,7 @@ const defMaze = serializeToMaze(
 11111111111111111111111
 `.trim()
 );
+// console.log(defMaze.maze, defMaze.start, defMaze.end);
 
 describe('maze', () => {
   let playerPublicKey: PublicKey,
@@ -41,11 +42,6 @@ describe('maze', () => {
     let txn = await Mina.transaction(playerPublicKey, () => {
       AccountUpdate.fundNewAccount(playerPublicKey);
       zkApp.deploy();
-      zkApp.startGame(
-        Field(defMaze.maze),
-        Field(defMaze.start),
-        Field(defMaze.end)
-      );
     });
     await txn.prove();
     await txn.sign([zkAppPrivateKey, playerPrivateKey]).send();

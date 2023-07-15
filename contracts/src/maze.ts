@@ -4,6 +4,10 @@
 const FLAG = 111111;
 const MAZE_WIDTH = 23;
 const MAZE_HEIGHT = 11;
+const MAZE_ENCODED =
+  14474010291946539611267177320239696521019383011430005103960479183690704879615n;
+const MAZE_START = 26;
+const MAZE_END = 52;
 
 import {
   Field,
@@ -88,16 +92,10 @@ class MazeContract extends SmartContract {
 
   init() {
     super.init();
-    this.maze.set(Field(0));
     this.flag.set(Field(0));
-    this.position.set(Field(0));
-  }
-
-  @method startGame(maze: Field, start: Field, end: Field) {
-    this.maze.assertEquals(Field(0));
-    this.maze.set(maze);
-    this.position.set(start);
-    this.end.set(end);
+    this.maze.set(Field(MAZE_ENCODED));
+    this.position.set(Field(MAZE_START));
+    this.end.set(Field(MAZE_END));
   }
 
   @method play(direction: Field) {
