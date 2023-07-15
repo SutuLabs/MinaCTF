@@ -55,7 +55,7 @@ jobs:
 
       - name: Change version number
         run: |
-          sed -i 's/0.1/${VERSION}/' .env
+          sed -i "s/0.1/${VERSION}/" .env
       - name: Build
         run: |
           yarn build
