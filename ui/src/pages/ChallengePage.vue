@@ -60,6 +60,11 @@
               Step1: Click "Deploy" button to let platform create a new account
               and deploy the challenge contract for you.
             </p>
+            <p class="q-my-md text-grey">
+              Hint: Mina block generation time is average 3 minutes, but may
+              take up to 10 minutes in some scenario, you need to wait the
+              transaction included in the block to start your challenge.
+            </p>
             <q-btn
               class="q-my-md full-width"
               @click="deploy()"
