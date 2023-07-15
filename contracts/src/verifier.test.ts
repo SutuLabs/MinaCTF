@@ -27,13 +27,13 @@ describe('verifier', () => {
     const zkApp = new VerifierContract(zkAppAddress);
     const sk = PrivateKey.fromBigInt(17n);
     const pk = sk.toPublicKey();
+    // console.log(pk.toBase58());
     const payload = Field(20);
 
     // deploy
     let txn = await Mina.transaction(playerPublicKey, () => {
       AccountUpdate.fundNewAccount(playerPublicKey);
       zkApp.deploy();
-      zkApp.startGame(pk, payload);
     });
     await txn.prove();
     await txn.sign([zkAppPrivateKey, playerPrivateKey]).send();

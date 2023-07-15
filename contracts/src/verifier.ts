@@ -2,6 +2,8 @@
  * This file defines the `Verifier` smart contract and the helpers it needs.
  */
 const FLAG = 111111;
+const PUBLICKEY = 'B62qoYts8pW1GVTt44vhA3esBDN67UsX9jLBackLGarfVKBRWtjQBkU';
+const PAYLOAD = 20;
 
 import {
   Field,
@@ -26,15 +28,9 @@ class VerifierContract extends SmartContract {
 
   init() {
     super.init();
-    this.payload.set(Field(0));
     this.flag.set(Field(0));
-  }
-
-  @method startGame(publicKey: PublicKey, payload: Field) {
-    this.payload.assertEquals(Field(0));
-    payload.equals(0).assertFalse();
-    this.publicKey.set(publicKey);
-    this.payload.set(payload);
+    this.publicKey.set(PublicKey.fromBase58(PUBLICKEY));
+    this.payload.set(Field(PAYLOAD));
   }
 
   @method play(signature: Signature) {
