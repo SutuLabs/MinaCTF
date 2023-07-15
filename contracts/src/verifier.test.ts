@@ -25,7 +25,7 @@ describe('verifier', () => {
 
   it('deploys & accepts a correct move', async () => {
     const zkApp = new VerifierContract(zkAppAddress);
-    const sk = PrivateKey.fromFields([Field(17)]);
+    const sk = PrivateKey.fromBigInt(17n);
     const pk = sk.toPublicKey();
     const payload = Field(20);
 
@@ -45,7 +45,7 @@ describe('verifier', () => {
     expect(spk).toEqual(pk);
 
     // try fake solution, flag should not be set
-    const fakesk = PrivateKey.fromFields([Field(1)]);
+    const fakesk = PrivateKey.fromBigInt(1n);
     const fakesig = Signature.create(fakesk, [m]);
 
     txn = await Mina.transaction(playerPublicKey, async () => {
