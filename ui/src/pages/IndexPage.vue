@@ -1,7 +1,11 @@
 <template>
-  <q-page class="row content-start">
+  <q-page class="row content-start container">
     <p class="q-ma-md text-body1 text-weight-bold">
       Play CTF game is a good way to practice your programming skills.
+    </p>
+
+    <p class="q-ma-md">
+      <img class="full-width" src="../assets/landscape.jpg" />
     </p>
 
     <p class="q-ma-md">
@@ -11,6 +15,7 @@
       challenge has been solved successfully, the user will find a "flag" within
       the challenge that is proof of completion.
     </p>
+
     <p class="q-ma-md">
       <q-btn to="/challenges" label="Start" icon="flag" color="primary" push />
       <q-btn

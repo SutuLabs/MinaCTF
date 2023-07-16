@@ -75,7 +75,8 @@
           <span v-else> Not deploy yet, click Deploy to start </span>
         </p>
       </article>
-      <div class="full-width">
+      <div class="full-width"></div>
+      <div class="full-width container">
         <q-stepper
           v-model="step"
           class="q-ma-md"
