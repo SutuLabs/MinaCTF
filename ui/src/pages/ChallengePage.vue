@@ -192,7 +192,7 @@ const challengeDetail: ChallengeEntity | undefined =
   challengeData[challengeName];
 
 const stepper = ref(QStepper);
-const step = ref(1);
+const step = ref(0);
 const description = ref('');
 const publicKey = ref('');
 const contractId = ref('');
@@ -243,6 +243,8 @@ async function getInfo() {
     } else {
       step.value = 2;
     }
+  } else {
+    step.value = 1;
   }
 }
 
@@ -253,20 +255,20 @@ async function deploy() {
     const { contractId: cid, txHash: th } = await contract.deploy(
       challengeName,
       (stage) => {
-      switch (stage) {
-        case 'sign':
-          deployingStage.value = 'GettingSignature';
-          break;
-        case 'send':
-          deployingStage.value = 'SendTx';
-          break;
-        case 'fetch':
-          deployingStage.value = 'GettingTx';
-          break;
+        switch (stage) {
+          case 'sign':
+            deployingStage.value = 'GettingSignature';
+            break;
+          case 'send':
+            deployingStage.value = 'SendTx';
+            break;
+          case 'fetch':
+            deployingStage.value = 'GettingTx';
+            break;
 
-        default:
-          break;
-      }
+          default:
+            break;
+        }
       }
     );
     contractId.value = cid;
@@ -275,6 +277,8 @@ async function deploy() {
   } catch (error) {
     if (error instanceof Error) {
       $q.notify({ message: error.message, color: 'negative' });
+    } else {
+      console.warn('error during deploy', error);
     }
     isDeploying.value = false;
   }

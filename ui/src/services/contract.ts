@@ -1,4 +1,3 @@
-import { PublicKey } from 'snarkyjs';
 import {
   CaptureRequest,
   CaptureResponse,
@@ -12,6 +11,7 @@ const transactionFee = 0.1;
 const rpcUrl = process.env.VUE_APP_BACKEND_RPC ?? 'http://localhost:3030/';
 
 export async function deploy(
+  challenge: string,
   onstage?: (stage: 'sign' | 'fetch' | 'send') => void
 ): Promise<{
   contractId: string;
@@ -35,7 +35,7 @@ export async function deploy(
 
   onstage?.('sign');
   const signResult = await mina.signMessage({
-    message: `Deploy Signature for MinaCTF
+    message: `Deploy Signature for MinaCTF[${challenge}]
 
 Time: ${new Date().toString()}
 Timestamp: ${Date.now()}`,
@@ -49,7 +49,7 @@ Timestamp: ${Date.now()}`,
       signature: signResult.signature,
     },
   };
-  const resp = await fetch(rpcUrl + 'api/checkin', {
+  const resp = await fetch(rpcUrl + 'api/' + challenge, {
     method: 'POST',
     headers: {
       Accept: 'application/json',
