@@ -16,6 +16,18 @@
           <q-card-section horizontal class="row fit">
             <q-card-section class="q-pt-xs col-8">
               <div class="text-overline">
+                <q-icon
+                  :name="
+                    c.difficulty == 'beginner'
+                      ? 'battery_2_bar'
+                      : c.difficulty == 'medium'
+                      ? 'battery_4_bar'
+                      : c.difficulty == 'expert'
+                      ? 'battery_full'
+                      : 'battery_alert'
+                  "
+                  color="primary"
+                ></q-icon>
                 {{ (c.difficulty ?? '').toUpperCase() }}
               </div>
               <div class="text-h5 q-mt-sm q-mb-xs">{{ c.title }}</div>
@@ -62,7 +74,7 @@
 import { ref, Ref } from 'vue';
 import { challengeData as challenges } from 'app/../contracts/server/challengeData';
 import * as contract from 'src/services/contract';
-import { ChallengeStatusEntity } from 'app/../contracts/server/model';
+import { ChallengeStatusEntity } from 'app/../contracts/server/services/model';
 
 const publicKey = ref('');
 const walletExist = ref(false);
