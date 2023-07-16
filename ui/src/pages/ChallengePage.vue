@@ -4,7 +4,15 @@
       <p class="q-my-md">Challenge not found!</p>
     </article>
     <article v-else-if="!walletExist" class="q-mx-md">
-      <p class="q-my-md">You need to install Auro Wallet to continue.</p>
+      <p class="q-my-md">
+        You need to install
+        <a
+          href="https://chrome.google.com/webstore/detail/auro-wallet/cnmamaachppnkjgnildpdmkaakejnhae"
+          target="_blank"
+          >Auro Wallet <q-icon name="open_in_new"></q-icon
+        ></a>
+        to continue.
+      </p>
     </article>
     <article v-else-if="!publicKey" class="q-mx-md">
       <p class="q-my-md">You must connect with your Auro wallet</p>
@@ -35,11 +43,11 @@
           <a
             :href="'https://faucet.minaprotocol.com/?address=' + publicKey"
             target="_blank"
-            >faucet1</a
-          >
+            >faucet1 <q-icon name="open_in_new"></q-icon>
+          </a>
           or
           <a href="https://berkeley.minaexplorer.com/faucet" target="_blank"
-            >faucet2</a
+            >faucet2 <q-icon name="open_in_new"></q-icon> </a
           >.
         </p>
         <p>
@@ -49,8 +57,9 @@
           <a
             href="https://docs.minaprotocol.com/zkapps/snarkyjs"
             target="_blank"
-            >https://docs.minaprotocol.com/zkapps/snarkyjs</a
-          >
+            >https://docs.minaprotocol.com/zkapps/snarkyjs
+            <q-icon name="open_in_new"></q-icon>
+          </a>
         </p>
         <h6 v-if="step > 0" class="q-my-md">Deployment Contract</h6>
         <p v-if="step > 0">
