@@ -28,13 +28,6 @@
   - Scoreboard
     - List
 
-## TODOs
-
-- [ ] Message signing when deploy need to check validity by time
-- [ ] Add remaining challenges
-- [ ] Write guidance
-- [ ] Deploy
-
 ## FAQ
 
 ### Is there a way to cache/skip compiling?
