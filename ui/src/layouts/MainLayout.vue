@@ -11,6 +11,9 @@
           @click="toggleLeftDrawer"
         />
 
+        <q-avatar square>
+          <img src="../assets/logo.png" />
+        </q-avatar>
         <q-toolbar-title> Mina CTF </q-toolbar-title>
       </q-toolbar>
     </q-header>
