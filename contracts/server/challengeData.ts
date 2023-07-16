@@ -6,6 +6,7 @@ export interface ChallengeEntity {
   icon: string;
   difficulty: 'beginner' | 'medium' | 'expert';
   point: number;
+  contractName: string;
 }
 
 export const challengeData: { [key: string]: ChallengeEntity } = {
@@ -17,6 +18,7 @@ export const challengeData: { [key: string]: ChallengeEntity } = {
     icon: 'luggage',
     difficulty: 'beginner',
     point: 100,
+    contractName: 'CheckinContract',
   },
   prime: {
     flagPosition: 1,
@@ -26,6 +28,7 @@ export const challengeData: { [key: string]: ChallengeEntity } = {
     icon: 'calculate',
     difficulty: 'medium',
     point: 200,
+    contractName: 'PrimeContract',
   },
   verifier: {
     flagPosition: 2,
@@ -35,6 +38,7 @@ export const challengeData: { [key: string]: ChallengeEntity } = {
     icon: 'edit_square',
     difficulty: 'medium',
     point: 200,
+    contractName: 'VerifierContract',
   },
   maze: {
     flagPosition: 3,
@@ -44,6 +48,7 @@ export const challengeData: { [key: string]: ChallengeEntity } = {
     icon: 'extension',
     difficulty: 'expert',
     point: 300,
+    contractName: 'MazeContract',
   },
 };
 

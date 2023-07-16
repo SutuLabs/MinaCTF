@@ -250,7 +250,9 @@ async function deploy() {
   isDeploying.value = true;
   try {
     deployingStage.value = 'Preparing';
-    const { contractId: cid, txHash: th } = await contract.deploy((stage) => {
+    const { contractId: cid, txHash: th } = await contract.deploy(
+      challengeName,
+      (stage) => {
       switch (stage) {
         case 'sign':
           deployingStage.value = 'GettingSignature';
@@ -265,7 +267,8 @@ async function deploy() {
         default:
           break;
       }
-    });
+      }
+    );
     contractId.value = cid;
     txHash.value = th;
     checkDeployment();
