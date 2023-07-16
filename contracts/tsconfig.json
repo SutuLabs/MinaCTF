@@ -25,7 +25,8 @@
   },
   "include": [
     "./src",
-    "./server"
+    "./server",
+    "./scripts"
   ],
   "ts-node": {
     "esm": true,
