@@ -12,7 +12,7 @@ const pbUsername = process.env.PB_USERNAME;
 const pbPassword = process.env.PB_PASSWORD;
 if (!pbUrl || !pbUsername || !pbPassword) {
   throw new Error(
-    'Env./services/modelt variable PB_EP_URL, PB_USERNAME, PB_PASSWORD must be assigned'
+    'variable PB_EP_URL, PB_USERNAME, PB_PASSWORD must be assigned'
   );
 }
 console.log(`Connecting PocketBase using ${pbUrl} and ${pbUsername}`);
