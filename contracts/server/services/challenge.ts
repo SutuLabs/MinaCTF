@@ -1,6 +1,9 @@
 import express from 'express';
-import { fetchAccount, PrivateKey, PublicKey } from 'snarkyjs';
+import { fetchAccount, PrivateKey, PublicKey, SmartContract } from 'snarkyjs';
 import { CheckinContract } from '../../src/checkin.js';
+import { MazeContract } from '../../src/maze.js';
+import { PrimeContract } from '../../src/prime.js';
+import { VerifierContract } from '../../src/verifier.js';
 import { authenticate, getContractTx, num2Arr, tryGetAccount } from './utils';
 import PocketBase from 'pocketbase';
 import {
@@ -10,9 +13,14 @@ import {
   CaptureResponse,
 } from './model';
 import { challengeData as cdata } from '../challengeData';
-import vkey from '../vkey.json' assert { type: 'json' };
+import vkeyraw from '../vkey.json' assert { type: 'json' };
 
-const verificationKey = vkey['checkin'];
+const vkey = vkeyraw as unknown as {
+  [key: string]: {
+    data: string;
+    hash: string;
+  };
+};
 
 export async function createChallenge(
   pb: PocketBase,
@@ -20,15 +28,24 @@ export async function createChallenge(
   res: express.Response
 ) {
   try {
-    console.log('challenge');
     const challengeName = req.params.challenge;
     const challenge = cdata[req.params.challenge];
     if (!challenge) {
       res.status(400).send({ success: false, error: 'unknown challenge' });
+      return;
+    }
+
+    const verificationKey = vkey[challengeName];
+    if (!verificationKey) {
+      res.status(400).send({ success: false, error: 'challenge is not ready' });
+      return;
     }
 
     const r = req.body as StartRequest;
     const deployerPublicKey = PublicKey.fromBase58(r.auth.publicKey);
+    console.log(
+      `Creating challenge [${challengeName}] using [${deployerPublicKey.toBase58()}]`
+    );
 
     const a = authenticate(r.auth);
     if (!a.success) {
@@ -41,7 +58,6 @@ export async function createChallenge(
     }
 
     // check deployer pk balance
-
     let account = await tryGetAccount({
       account: deployerPublicKey,
       isZkAppAccount: false,
@@ -56,25 +72,37 @@ export async function createChallenge(
       res.status(400).send(JSON.stringify({ success: false, error: msg }));
       return;
     }
-    console.log(
-      `Using fee payer account with nonce ${account.nonce}, balance ${account.balance}`
-    );
+    // console.log(
+    //   `Using fee payer account with nonce ${account.nonce}, balance ${account.balance}`
+    // );
 
     // create tx
     const zkAppPrivateKey = PrivateKey.random(); // maybe consider deterministic private key
     const zkAppPublicKey = zkAppPrivateKey.toPublicKey();
-    // select from challenge
-    let zkapp = new CheckinContract(zkAppPublicKey);
+
+    let zkapp: SmartContract | undefined =
+      challengeName == 'checkin'
+        ? new CheckinContract(zkAppPublicKey)
+        : challengeName == 'maze'
+        ? new MazeContract(zkAppPublicKey)
+        : challengeName == 'prime'
+        ? new PrimeContract(zkAppPublicKey)
+        : challengeName == 'verifier'
+        ? new VerifierContract(zkAppPublicKey)
+        : undefined;
+    if (!zkapp) {
+      res.status(400).send({
+        success: false,
+        error: `unexpected challenge: ${challengeName}`,
+      });
+      return;
+    }
 
     const ctx = await getContractTx(
       deployerPublicKey,
       zkAppPrivateKey,
       zkapp,
       verificationKey
-      // (zkapp) => {
-      //   const app = zkapp as CheckinContract;
-      //   app.startGame();
-      // }
     );
     if (!ctx.success || !ctx.tx) {
       res.status(500).send({ success: false, error: 'failed to generate tx' });
@@ -110,6 +138,7 @@ export async function createChallenge(
       tx: ctx.tx,
       contractId: zkAppPublicKey.toBase58(),
     };
+    console.log(`Created contract id: ${resp.contractId}`);
     res.send(resp);
   } catch (err) {
     console.warn(err);
@@ -130,6 +159,7 @@ export async function checkChallenge(
     const challenge = cdata[req.params.challenge];
     if (!challenge) {
       res.status(400).send({ success: false, error: 'unknown challenge' });
+      return;
     }
 
     const r = req.body as CaptureRequest;
@@ -154,9 +184,12 @@ export async function checkChallenge(
     const citem = await tracker.getFirstListItem(`contractId='${contractId}'`);
     await tracker.update(citem.id, {
       captureTime: new Date(Date.now()),
-      score: 1,
+      score: challenge.point,
     });
 
+    console.log(
+      `Challenge complete by ${citem.publicKey}, contract id: ${contractId}`
+    );
     res.send({ success: true } as CaptureResponse);
   } catch (err) {
     console.warn(err);

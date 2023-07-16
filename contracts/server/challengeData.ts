@@ -18,15 +18,33 @@ export const challengeData: { [key: string]: ChallengeEntity } = {
     difficulty: 'beginner',
     point: 100,
   },
-  // maze: {
-  //   flagPosition: 3,
-  //   flagNumber: 111111n,
-  //   title: 'Maze',
-  //   caption: 'Find a way',
-  //   icon: 'extension',
-  //   difficulty: 'expert',
-  //   point: 300,
-  // },
+  prime: {
+    flagPosition: 1,
+    flagNumber: 111111n,
+    title: 'Prime',
+    caption: 'Elementary math',
+    icon: 'calculate',
+    difficulty: 'medium',
+    point: 200,
+  },
+  verifier: {
+    flagPosition: 2,
+    flagNumber: 111111n,
+    title: 'Verifier',
+    caption: 'Papers, Please',
+    icon: 'edit_square',
+    difficulty: 'medium',
+    point: 200,
+  },
+  maze: {
+    flagPosition: 3,
+    flagNumber: 111111n,
+    title: 'Maze',
+    caption: 'Find a way out',
+    icon: 'extension',
+    difficulty: 'expert',
+    point: 300,
+  },
 };
 
 export default {};
