@@ -27,9 +27,30 @@
         <p>
           {{ challengeDetail.title }}
         </p>
-        <h6 class="q-my-md">Description</h6>
+        <h6 class="q-my-md">Help Info</h6>
         <p>
-          {{ description }}
+          <b> Create an account and request gas: </b>
+          <br />
+          You can request test MINA using the
+          <a
+            :href="'https://faucet.minaprotocol.com/?address=' + publicKey"
+            target="_blank"
+            >faucet1</a
+          >
+          or
+          <a href="https://berkeley.minaexplorer.com/faucet" target="_blank"
+            >faucet2</a
+          >.
+        </p>
+        <p>
+          <b> Compile & Run & Modify the code, refer below docs: </b>
+          <br />
+          SnarkyJS:
+          <a
+            href="https://docs.minaprotocol.com/zkapps/snarkyjs"
+            target="_blank"
+            >https://docs.minaprotocol.com/zkapps/snarkyjs</a
+          >
         </p>
         <h6 v-if="step > 0" class="q-my-md">Deployment Contract</h6>
         <p v-if="step > 0">
@@ -214,7 +235,6 @@ const challengeDetail: ChallengeEntity | undefined =
 
 const stepper = ref(QStepper);
 const step = ref(0);
-const description = ref('');
 const publicKey = ref('');
 const contractId = ref('');
 const txHash = ref('');
