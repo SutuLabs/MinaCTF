@@ -220,7 +220,7 @@
 
 <script setup lang="ts">
 import { QStepper, useQuasar } from 'quasar';
-import { fetchAccount } from 'snarkyjs';
+import { fetchAccount } from '../services/fetchAccount';
 import * as contract from 'src/services/contract';
 import { ref, Ref } from 'vue';
 import { useRoute } from 'vue-router';
@@ -348,7 +348,7 @@ async function checkDeployment() {
     endpointUrl
   );
   let accountExists = response.account !== undefined;
-  accountExists = response.account?.zkapp?.appState !== undefined;
+  accountExists = response.account?.zkappState !== undefined;
   if (accountExists) {
     stepper.value.next();
     isDeploying.value = false;
@@ -375,16 +375,15 @@ async function submit() {
       { publicKey: contractId.value },
       endpointUrl
     );
-    const state = response.account?.zkapp?.appState;
+    const state = response.account?.zkappState;
     const flagpos = challengeDetail.flagPosition;
-    const flagarr = state?.[flagpos]?.value?.[1];
-    if (!flagarr) {
+    const curflag = state?.[flagpos];
+    if (!curflag) {
       submitError.value = 'wrong contract';
       return;
     }
 
-    const targetArr = num2Arr(challengeDetail.flagNumber);
-    if (JSON.stringify(flagarr) != JSON.stringify(targetArr)) {
+    if (challengeDetail.flagNumber != BigInt(curflag)) {
       submitError.value = 'flag not caught.';
       return;
     }
@@ -418,15 +417,5 @@ function reset() {
   }).onOk(() => {
     step.value = 1;
   });
-}
-
-function num2Arr(number: bigint, length = 32): Uint8Array {
-  let pos = 0;
-  const arr = new Uint8Array(length);
-  while (number > 0) {
-    arr[pos++] = Number(number & 255n);
-    number >>= 8n;
-  }
-  return arr;
 }
 </script>
