@@ -9,5 +9,4 @@ RUN npm ci
 
 COPY ./ ./
 
-EXPOSE 3030
 CMD [ "npx", "-p", "ts-node", "ts-node", "server/server.ts" ]
