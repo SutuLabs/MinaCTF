@@ -31,8 +31,8 @@
         <p>
           {{ description }}
         </p>
-        <h6 class="q-my-md">Deployment Contract</h6>
-        <p>
+        <h6 v-if="step > 0" class="q-my-md">Deployment Contract</h6>
+        <p v-if="step > 0">
           <a
             v-if="contractId"
             :href="'https://berkeley.minaexplorer.com/wallet/' + contractId"
@@ -154,8 +154,29 @@
             Congratulations, you have done the challenge.
           </q-step>
         </q-stepper>
+        <q-inner-loading :showing="isLoading">
+          <q-spinner-puff size="50px" color="primary" />
+        </q-inner-loading>
+
+        <q-banner
+          v-if="step == 0 && !isLoading"
+          rounded
+          class="bg-deep-orange-8 text-white q-ma-md"
+        >
+          Sorry, the server is temporarily unavailable, please try again later.
+
+          <template v-slot:action>
+            <q-btn
+              flat
+              color="white"
+              label="Try Again"
+              icon="refresh"
+              @click="getInfo()"
+            />
+          </template>
+        </q-banner>
         <q-btn
-          v-if="step != 1"
+          v-if="step > 1"
           class="q-ma-md float-right"
           @click="reset()"
           color="grey"
@@ -216,6 +237,8 @@ const score = ref(-1);
 const startTime = ref(0);
 const captureTime = ref(0);
 
+const isLoading = ref(false);
+
 const mina = window.mina;
 
 if (mina && challengeDetail) {
@@ -231,20 +254,25 @@ async function connect() {
 }
 
 async function getInfo() {
-  const status = await contract.getStatus(publicKey.value);
-  const c = status.challenges.filter((_) => _.name == challengeName)[0];
-  if (c) {
-    contractId.value = c.contractId;
-    score.value = c.score;
-    startTime.value = c.startTime;
-    captureTime.value = c.captureTime;
-    if (captureTime.value > 0) {
-      step.value = 3;
+  try {
+    isLoading.value = true;
+    const status = await contract.getStatus(publicKey.value);
+    const c = status.challenges.filter((_) => _.name == challengeName)[0];
+    if (c) {
+      contractId.value = c.contractId;
+      score.value = c.score;
+      startTime.value = c.startTime;
+      captureTime.value = c.captureTime;
+      if (captureTime.value > 0) {
+        step.value = 3;
+      } else {
+        step.value = 2;
+      }
     } else {
-      step.value = 2;
+      step.value = 1;
     }
-  } else {
-    step.value = 1;
+  } finally {
+    isLoading.value = false;
   }
 }
 
