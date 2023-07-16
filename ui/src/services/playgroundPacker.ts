@@ -33,8 +33,16 @@ export async function packPlaygroundProject(
       ? verifierStr
       : '';
 
+  zip.file(
+    'src/run.ts',
+    runStr
+      .replaceAll('CONTRACTNAME', contractName)
+      .replaceAll(
+        'zkapp.play();',
+        `zkapp.play(${Array(c.parameterNumber).fill('Field(0)').join(', ')});`
+      )
+  );
   zip.file('src/contract.ts', contractContent);
-  zip.file('src/run.ts', runStr.replaceAll('CONTRACTNAME', contractName));
   zip.file('.env', `PRIVATE_KEY=\nCONTRACT_ID=${contractId}`);
   zip.file('.gitignore', gitignoreStr);
   zip.file('package.json', packageStr);

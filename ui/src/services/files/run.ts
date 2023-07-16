@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { fetchAccount, Mina, PrivateKey, PublicKey } from 'snarkyjs';
+import { fetchAccount, Mina, PrivateKey, PublicKey, Field } from 'snarkyjs';
 import { CONTRACTNAME } from './contract.js';
 
 const endpointUrl =
@@ -63,7 +63,9 @@ await (async function run() {
   const transaction = await Mina.transaction(
     { sender: deployerPublicKey, fee: deployTransactionFee },
     () => {
-      // Modify your code here
+      /**************************************
+       * TODO: Modify your code here
+       **************************************/
       zkapp.play();
     }
   );
