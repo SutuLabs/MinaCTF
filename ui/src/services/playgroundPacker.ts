@@ -3,6 +3,7 @@ import tsconfigStr from './files/tsconfig.json?raw';
 import packageStr from './files/package.json?raw';
 import gitignoreStr from './files/.gitignore?raw';
 import runStr from './files/run.ts?raw';
+import readmeStr from './files/README.md?raw';
 
 import { challengeData as challenges } from 'app/../contracts/server/challengeData';
 import checkinStr from 'app/../contracts/src/checkin.ts?raw';
@@ -38,6 +39,7 @@ export async function packPlaygroundProject(
   zip.file('.gitignore', gitignoreStr);
   zip.file('package.json', packageStr);
   zip.file('tsconfig.json', tsconfigStr);
+  zip.file('README.md', readmeStr);
 
   return zip.generateAsync({ type: 'blob' });
 }
