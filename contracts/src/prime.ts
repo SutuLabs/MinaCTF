@@ -22,6 +22,8 @@ class PrimeContract extends SmartContract {
 
   @method play(x: Field, y: Field) {
     const num = x.mul(y);
+    x.assertGreaterThan(2);
+    y.assertGreaterThan(2);
 
     // precondition that links to the actual on-chain state
     this.number.assertEquals(this.number.get());
