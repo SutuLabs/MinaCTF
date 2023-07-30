@@ -26,11 +26,15 @@ const genesisMeow = new Meow({
   charm: UInt64.from(INIT_POINT),
 });
 const meowList = [genesisMeow, genesisMeow];
-const enableSearchSolution = true;
+const enableSearchSolution = false;
 
 // for max 5
 let moves = JSON.parse(
   '[[0,1],[1,2],[0,1],[0,4],[4,5],[5,6],[3,7],[5,6],[8,9],[8,10],[7,8],[9,12],[11,12],[11,13],[14,15],[13,16],[16,17],[17,18],[16,18],[18,20],[18,19],[21,22]]'
+);
+// for max 3
+moves = JSON.parse(
+  '[[0,1],[1,2],[0,1],[0,4],[4,5],[5,6],[3,7],[5,6],[8,9],[8,10],[6,11]]'
 );
 
 // find solution
@@ -88,14 +92,7 @@ describe('meowHero', () => {
       tree.setLeaf(BigInt(meowList.length), baby.hash());
       meowList[meowList.length] = baby;
 
-      console.log(
-        'work on move',
-        [x, y],
-        meow1.toString(),
-        meow2.toString(),
-        baby.toString(),
-        seed.toBigInt()
-      );
+      // console.log( 'work on move', [x, y], meow1.toString(), meow2.toString(), baby.toString(), seed.toBigInt());
       txn = await Mina.transaction(playerPublicKey, async () => {
         zkApp.breed(meow1, path1, meow2, path2, babyPath);
       });
@@ -110,7 +107,7 @@ describe('meowHero', () => {
     {
       const x = meowList.length - 1;
       const meow = meowList[x];
-      console.log('capture meow: ', JSON.stringify(meow));
+      // console.log('capture meow: ', JSON.stringify(meow));
       const path = new LegionMerkleWitness(tree.getWitness(BigInt(x)));
       txn = await Mina.transaction(playerPublicKey, async () => {
         zkApp.capture(meow, path);
@@ -121,7 +118,7 @@ describe('meowHero', () => {
       // when capture is success, get the right flag
       const f = zkApp.flag.get();
       f.assertGreaterThan(0);
-      console.log('flag:', f.toBigInt());
+      // console.log('flag:', f.toBigInt());
     }
   });
 });

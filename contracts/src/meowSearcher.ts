@@ -1,6 +1,7 @@
 import { Meow, combineMeow } from './meowHero';
 import { Field, Poseidon } from 'snarkyjs';
 const heuristicNumber = 10;
+const isConsoleLog = false;
 
 interface StackItem {
   list: Meow[];
@@ -25,13 +26,6 @@ function combine(
   const m2 = list[choice[1]];
   const baby = combineMeow(m1, m2, seed);
   const seedAfter = Poseidon.hash([seed, Field(choice[0]), Field(choice[1])]);
-  //   console.log(
-  //     'seed',
-  //     seed.toBigInt(),
-  //     choice[0],
-  //     choice[1],
-  //     seedAfter.toBigInt()
-  //   );
 
   return {
     list,
@@ -45,7 +39,7 @@ function combine(
 
 function getNext(item: StackItem): StackItem | undefined {
   const { choice, list, seedBefore, commands } = item;
-  // iterate backward from last meow
+  // iterate backward from last meow in tilt order
   /*
 
   require `y>x`
@@ -116,22 +110,26 @@ export function searchMeow(list: Meow[], seed: Field): [number, number][] {
   while (stack.length) {
     const item = stack.pop();
     if (!item) continue;
-    const { baby, choice, seedAfter: seed, list, commands } = item;
-    count++;
-    if (count % 100 == 0) {
-      console.log(
-        `[${new Date().toLocaleTimeString()}]looping in ${count} rounds, stack size: ${
-          stack.length
-        }`
-      );
-    }
-    const rank = getRank(item);
-    if (rank > max) {
-      const msg = `[${new Date().toLocaleTimeString()}]new record reached: ${getRank(
-        item
-      )} ${JSON.stringify(commands)} : ${baby} : ${seed}`;
-      console.log(msg);
-      max = rank;
+    const { baby, seedAfter: seed, list, commands } = item;
+
+    // console log for diagnostic
+    if (isConsoleLog) {
+      count++;
+      if (count % 100 == 0) {
+        console.log(
+          `[${new Date().toLocaleTimeString()}]looping in ${count} rounds, stack size: ${
+            stack.length
+          }`
+        );
+      }
+      const rank = getRank(item);
+      if (rank > max) {
+        const msg = `[${new Date().toLocaleTimeString()}]new record reached: ${getRank(
+          item
+        )} ${JSON.stringify(commands)} : ${baby} : ${seed}`;
+        console.log(msg);
+        max = rank;
+      }
     }
 
     // detect target reached
@@ -145,8 +143,8 @@ export function searchMeow(list: Meow[], seed: Field): [number, number][] {
       generated.add(JSON.stringify(ti.commands));
     }
 
-    let next: StackItem | undefined = item;
     // add horizontal (go wider)
+    let next: StackItem | undefined = item;
     for (let i = 0; i < heuristicNumber; i++) {
       next = getNext(next);
       // break if no next one
@@ -165,17 +163,6 @@ export function searchMeow(list: Meow[], seed: Field): [number, number][] {
     stack.sort(function (a, b) {
       return getRank(a) - getRank(b);
     });
-
-    // console.log(
-    //   'reordered',
-    //   stack.map((_) => ({
-    //     baby: JSON.stringify(_.baby),
-    //     choice: JSON.stringify(_.choice),
-    //     commands: JSON.stringify(_.commands),
-    //     list: JSON.stringify(_.list.length),
-    //     rank: _.baby.total().toBigInt() - BigInt(_.commands.length),
-    //   }))
-    // );
   }
 
   return [];

@@ -4,7 +4,7 @@
 const FLAG = 111111;
 const LEGION_TREE_HEIGHT = 10;
 const INIT_POINT = 1;
-const MAX_POINT = 5;
+const MAX_POINT = 3;
 const LEGION_ROOT =
   21437966668462597419531228685056711434672956253044931657149388835408624663326n;
 const SEED = 1938301114479194655n;
@@ -19,7 +19,6 @@ import {
   Poseidon,
   UInt64,
   Struct,
-  Circuit,
   Provable,
   Bool,
 } from 'snarkyjs';
@@ -140,12 +139,6 @@ class MeowHeroContract extends SmartContract {
     const meow = combineMeow(meow1, meow2, seed);
 
     // calculate and update new seed
-    // console.log(
-    //   'seed',
-    //   seed.toBigInt(),
-    //   path1.calculateIndex().toBigInt(),
-    //   path2.calculateIndex().toBigInt()
-    // );
     const newseed = Poseidon.hash([
       seed,
       path1.calculateIndex(),
@@ -180,17 +173,13 @@ class MeowHeroContract extends SmartContract {
 }
 
 function divMod(x: Field, y: bigint): { quotient: Field; rest: Field } {
-  // const xn = x.toBigInt();
-  const yn = y;
-  // const q = xn / yn;
-  // const r = xn - q * yn;
-  const q = Provable.witness(Field, () => new Field(x.toBigInt() / y));
-  const r = x.sub(q.mul(y));
-  const quotient = q;
-  const rest = r;
+  // q = xn / yn;
+  const quotient = Provable.witness(Field, () => new Field(x.toBigInt() / y));
+  // r = xn - q * yn;
+  const rest = x.sub(quotient.mul(y));
 
-  quotient.mul(Field(yn)).add(rest).assertEquals(x);
-  rest.assertLessThan(Field(yn));
+  quotient.mul(Field(y)).add(rest).assertEquals(x);
+  rest.assertLessThan(Field(y));
 
   return {
     quotient,
@@ -203,26 +192,20 @@ function combineAttr(
   attr2: UInt64,
   seed: Field
 ): { attr: UInt64; seed: Field } {
-  // const { quotient: newseed, rest: r } = seed.divMod(3);
   const { quotient: newseed, rest } = divMod(seed, 3n);
 
   const r = UInt64.from(rest);
 
   // r \in [0, 2] => (2 * r - 2) \in {-2, 0, 2}
   // attr = (a_1 + a_2 + 2 * r - 2) / 2
+  // Truth Table:
   // | a_1 | a_2 |  r  |  a  |
   // | --- | --- | --- | --- |
   // |  1  |  1  |  1  |  1  |
   // |  1  |  2  |  1  |  1  |
   // |  1  |  2  |  2  |  2  |
   // |  2  |  2  |  2  |  3  |
-  const { quotient: q } = r
-    .mul(2)
-    // .add(1) // reduce difficulty
-    .add(attr1)
-    .add(attr2)
-    .sub(2)
-    .divMod(2);
+  const { quotient: q } = r.mul(2).add(attr1).add(attr2).sub(2).divMod(2);
 
   // newattr = q < 0 ? 0 : q > MAX ? MAX : q;
   const newattr = Provable.if(
