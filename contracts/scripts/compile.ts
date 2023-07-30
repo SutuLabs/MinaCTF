@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { Field } from 'snarkyjs';
+import '../server/config';
 
 import { CheckinContract } from '../src/checkin.js';
 import { MazeContract } from '../src/maze.js';

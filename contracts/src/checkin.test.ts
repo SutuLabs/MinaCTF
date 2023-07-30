@@ -34,6 +34,6 @@ describe('checkin', () => {
     await txn.sign([playerPrivateKey]).send();
     const f = zkApp.flag.get();
     f.assertGreaterThan(0);
-    console.log('flag:', f.toBigInt());
+    // console.log('flag:', f.toBigInt());
   });
 });

@@ -1,6 +1,7 @@
-import { Meow, MeowHeroContract, LEGION_TREE_HEIGHT, SEED, INIT_POINT, LegionMerkleWitness, combineMeow } from './meowHero';
+import { Meow, MeowHeroContract, LegionMerkleWitness, combineMeow } from './meowHero';
 import { Field, PrivateKey, PublicKey, Mina, AccountUpdate, MerkleTree, UInt64 } from 'snarkyjs';
 import { searchMeow } from './meowSearcher';
+import { INIT_POINT, SEED, LEGION_TREE_HEIGHT } from './constants';
 
 const genesisMeow = new Meow({
   power: UInt64.from(INIT_POINT),

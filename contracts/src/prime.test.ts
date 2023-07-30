@@ -1,3 +1,4 @@
+import { NUMBER } from './constants';
 import { PrimeContract } from './prime';
 import { Field, PrivateKey, PublicKey, Mina, AccountUpdate } from 'snarkyjs';
 
@@ -14,7 +15,7 @@ describe('prime', () => {
 
   it('deploys & accepts a correct move', async () => {
     const zkApp = new PrimeContract(zkAppAddress);
-    const number = Field(17);
+    const number = Field(NUMBER);
 
     // deploy
     let txn = await Mina.transaction(playerPublicKey, () => {
@@ -30,7 +31,7 @@ describe('prime', () => {
 
     const x = Field(3);
     const y = number.div(x);
-    console.log('x=', x.toBigInt(), ',y=', y.toBigInt());
+    // console.log('x=', x.toBigInt(), ',y=', y.toBigInt());
 
     txn = await Mina.transaction(playerPublicKey, async () => {
       zkApp.play(x, y);
@@ -39,6 +40,6 @@ describe('prime', () => {
     await txn.sign([playerPrivateKey]).send();
     const f = zkApp.flag.get();
     f.assertGreaterThan(0);
-    console.log('flag:', f.toBigInt());
+    // console.log('flag:', f.toBigInt());
   });
 });

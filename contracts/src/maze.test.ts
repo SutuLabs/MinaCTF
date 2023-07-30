@@ -19,6 +19,7 @@ const defMaze = serializeToMaze(
 `.trim()
 );
 // console.log(defMaze.maze, defMaze.start, defMaze.end);
+const isPrintMaze = false;
 
 describe('maze', () => {
   let playerPublicKey: PublicKey, playerPrivateKey: PrivateKey, zkAppAddress: PublicKey, zkAppPrivateKey: PrivateKey;
@@ -45,9 +46,11 @@ describe('maze', () => {
     // check maze status
     const m = zkApp.maze.get();
     expect(m).toEqual(Field(defMaze.maze));
-    const p = zkApp.position.get();
-    const e = zkApp.end.get();
-    new Maze(m, p, e).printState();
+    if (isPrintMaze) {
+      const p = zkApp.position.get();
+      const e = zkApp.end.get();
+      new Maze(m, p, e).printState();
+    }
 
     // move
     const moves = [Direction.Down, Direction.Right, Direction.Right, Direction.Right];
@@ -66,12 +69,12 @@ describe('maze', () => {
       } else {
         // when last move is success, get the right flag
         const f = zkApp.flag.get();
-        if (f.equals(0)) {
+        if (f.equals(0) && isPrintMaze) {
           // print maze when last move is not success
           new Maze(zkApp.maze.get(), zkApp.position.get(), zkApp.end.get()).printState();
         }
         f.assertGreaterThan(0);
-        console.log('flag:', f.toBigInt());
+        // console.log('flag:', f.toBigInt());
       }
     }
   });

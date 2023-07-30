@@ -1,10 +1,8 @@
 /**
  * This file defines the `Prime` smart contract and the helpers it needs.
  */
-const FLAG = 111111;
-const NUMBER = 17;
-
 import { Field, State, SmartContract, state, method, Circuit } from 'snarkyjs';
+import { NUMBER, FLAG } from './constants';
 
 export { PrimeContract };
 

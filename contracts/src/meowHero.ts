@@ -1,16 +1,10 @@
 /**
  * This file defines the `MeowHero` smart contract and the helpers it needs.
  */
-const FLAG = 111111;
-const LEGION_TREE_HEIGHT = 10;
-const INIT_POINT = 1;
-const MAX_POINT = 3;
-const LEGION_ROOT = 21437966668462597419531228685056711434672956253044931657149388835408624663326n;
-const SEED = 1938301114479194655n;
-
 import { Field, State, SmartContract, state, method, MerkleWitness, Poseidon, UInt64, Struct, Provable, Bool } from 'snarkyjs';
+import { LEGION_TREE_HEIGHT, MAX_POINT, LEGION_ROOT, SEED, FLAG, INIT_POINT } from './constants';
 
-export { Meow, MeowHeroContract, LegionMerkleWitness, LEGION_TREE_HEIGHT, LEGION_ROOT, MAX_POINT, INIT_POINT, SEED, combineMeow };
+export { Meow, MeowHeroContract, LegionMerkleWitness, combineMeow };
 
 class LegionMerkleWitness extends MerkleWitness(LEGION_TREE_HEIGHT) {}
 

@@ -1,3 +1,4 @@
+import { PAYLOAD } from './constants';
 import { VerifierContract } from './verifier';
 import { Field, PrivateKey, PublicKey, Mina, AccountUpdate, Signature } from 'snarkyjs';
 
@@ -17,7 +18,7 @@ describe('verifier', () => {
     const sk = PrivateKey.fromBigInt(17n);
     const pk = sk.toPublicKey();
     // console.log(pk.toBase58());
-    const payload = Field(20);
+    const payload = Field(PAYLOAD);
 
     // deploy
     let txn = await Mina.transaction(playerPublicKey, () => {
@@ -55,6 +56,6 @@ describe('verifier', () => {
     await txn.sign([playerPrivateKey]).send();
     f = zkApp.flag.get();
     f.assertGreaterThan(0);
-    console.log('flag:', f.toBigInt());
+    // console.log('flag:', f.toBigInt());
   });
 });
