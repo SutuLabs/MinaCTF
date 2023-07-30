@@ -2,16 +2,12 @@ import { PrimeContract } from './prime';
 import { Field, PrivateKey, PublicKey, Mina, AccountUpdate } from 'snarkyjs';
 
 describe('prime', () => {
-  let playerPublicKey: PublicKey,
-    playerPrivateKey: PrivateKey,
-    zkAppAddress: PublicKey,
-    zkAppPrivateKey: PrivateKey;
+  let playerPublicKey: PublicKey, playerPrivateKey: PrivateKey, zkAppAddress: PublicKey, zkAppPrivateKey: PrivateKey;
 
   beforeEach(async () => {
     let Local = Mina.LocalBlockchain({ proofsEnabled: false });
     Mina.setActiveInstance(Local);
-    [{ publicKey: playerPublicKey, privateKey: playerPrivateKey }] =
-      Local.testAccounts;
+    [{ publicKey: playerPublicKey, privateKey: playerPrivateKey }] = Local.testAccounts;
     zkAppPrivateKey = PrivateKey.random();
     zkAppAddress = zkAppPrivateKey.toPublicKey();
   });

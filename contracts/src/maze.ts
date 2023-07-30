@@ -4,20 +4,11 @@
 const FLAG = 111111;
 const MAZE_WIDTH = 23;
 const MAZE_HEIGHT = 11;
-const MAZE_ENCODED =
-  14474010291946539611267177320239696521019383011430005103960479183690704879615n;
+const MAZE_ENCODED = 14474010291946539611267177320239696521019383011430005103960479183690704879615n;
 const MAZE_START = 26;
 const MAZE_END = 52;
 
-import {
-  Field,
-  State,
-  SmartContract,
-  state,
-  method,
-  Bool,
-  Circuit,
-} from 'snarkyjs';
+import { Field, State, SmartContract, state, method, Bool, Circuit } from 'snarkyjs';
 
 export { Maze, MazeContract };
 
@@ -42,9 +33,7 @@ class Maze {
 
     // calculate the new position according to direction
     const pos = this.position.add(
-      Circuit.if(orientation, Field(1), Field(this.width)).mul(
-        Circuit.if(heading, Field(1), Field(-1))
-      )
+      Circuit.if(orientation, Field(1), Field(this.width)).mul(Circuit.if(heading, Field(1), Field(-1)))
     );
 
     // the avater should not stand on the wall

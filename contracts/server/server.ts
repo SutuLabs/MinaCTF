@@ -28,18 +28,12 @@ if (cluster.isPrimary && numCPUs > 1) {
 
 // For Worker
 else {
-  app.use(
-    (
-      _req: express.Request,
-      res: express.Response,
-      next: express.NextFunction
-    ) => {
-      res.header('Access-Control-Allow-Origin', '*');
-      res.header('Access-Control-Allow-Methods', '*');
-      res.header('Access-Control-Allow-Headers', '*');
-      next();
-    }
-  );
+  app.use((_req: express.Request, res: express.Response, next: express.NextFunction) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', '*');
+    res.header('Access-Control-Allow-Headers', '*');
+    next();
+  });
 
   app.listen(port, () => {
     console.log(`Start on port ${port}.`);

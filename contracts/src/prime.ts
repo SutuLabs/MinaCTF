@@ -28,11 +28,7 @@ class PrimeContract extends SmartContract {
     // precondition that links to the actual on-chain state
     this.number.assertEquals(this.number.get());
 
-    const flag = Circuit.if(
-      this.number.get().equals(num),
-      Field(FLAG),
-      Field(0)
-    );
+    const flag = Circuit.if(this.number.get().equals(num), Field(FLAG), Field(0));
     this.flag.set(flag);
   }
 }

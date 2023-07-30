@@ -1,24 +1,13 @@
 import { VerifierContract } from './verifier';
-import {
-  Field,
-  PrivateKey,
-  PublicKey,
-  Mina,
-  AccountUpdate,
-  Signature,
-} from 'snarkyjs';
+import { Field, PrivateKey, PublicKey, Mina, AccountUpdate, Signature } from 'snarkyjs';
 
 describe('verifier', () => {
-  let playerPublicKey: PublicKey,
-    playerPrivateKey: PrivateKey,
-    zkAppAddress: PublicKey,
-    zkAppPrivateKey: PrivateKey;
+  let playerPublicKey: PublicKey, playerPrivateKey: PrivateKey, zkAppAddress: PublicKey, zkAppPrivateKey: PrivateKey;
 
   beforeEach(async () => {
     let Local = Mina.LocalBlockchain({ proofsEnabled: false });
     Mina.setActiveInstance(Local);
-    [{ publicKey: playerPublicKey, privateKey: playerPrivateKey }] =
-      Local.testAccounts;
+    [{ publicKey: playerPublicKey, privateKey: playerPrivateKey }] = Local.testAccounts;
     zkAppPrivateKey = PrivateKey.random();
     zkAppAddress = zkAppPrivateKey.toPublicKey();
   });

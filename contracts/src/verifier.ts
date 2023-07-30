@@ -5,16 +5,7 @@ const FLAG = 111111;
 const PUBLICKEY = 'B62qoYts8pW1GVTt44vhA3esBDN67UsX9jLBackLGarfVKBRWtjQBkU';
 const PAYLOAD = 20;
 
-import {
-  Field,
-  State,
-  SmartContract,
-  state,
-  method,
-  Circuit,
-  PublicKey,
-  Signature,
-} from 'snarkyjs';
+import { Field, State, SmartContract, state, method, Circuit, PublicKey, Signature } from 'snarkyjs';
 
 export { VerifierContract };
 

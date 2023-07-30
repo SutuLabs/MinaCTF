@@ -1,21 +1,5 @@
-import {
-  Meow,
-  MeowHeroContract,
-  LEGION_TREE_HEIGHT,
-  SEED,
-  INIT_POINT,
-  LegionMerkleWitness,
-  combineMeow,
-} from './meowHero';
-import {
-  Field,
-  PrivateKey,
-  PublicKey,
-  Mina,
-  AccountUpdate,
-  MerkleTree,
-  UInt64,
-} from 'snarkyjs';
+import { Meow, MeowHeroContract, LEGION_TREE_HEIGHT, SEED, INIT_POINT, LegionMerkleWitness, combineMeow } from './meowHero';
+import { Field, PrivateKey, PublicKey, Mina, AccountUpdate, MerkleTree, UInt64 } from 'snarkyjs';
 import { searchMeow } from './meowSearcher';
 
 const genesisMeow = new Meow({
@@ -33,9 +17,7 @@ let moves = JSON.parse(
   '[[0,1],[1,2],[0,1],[0,4],[4,5],[5,6],[3,7],[5,6],[8,9],[8,10],[7,8],[9,12],[11,12],[11,13],[14,15],[13,16],[16,17],[17,18],[16,18],[18,20],[18,19],[21,22]]'
 );
 // for max 3
-moves = JSON.parse(
-  '[[0,1],[1,2],[0,1],[0,4],[4,5],[5,6],[3,7],[5,6],[8,9],[8,10],[6,11]]'
-);
+moves = JSON.parse('[[0,1],[1,2],[0,1],[0,4],[4,5],[5,6],[3,7],[5,6],[8,9],[8,10],[6,11]]');
 
 // find solution
 if (enableSearchSolution) {
@@ -44,16 +26,12 @@ if (enableSearchSolution) {
 }
 
 describe('meowHero', () => {
-  let playerPublicKey: PublicKey,
-    playerPrivateKey: PrivateKey,
-    zkAppAddress: PublicKey,
-    zkAppPrivateKey: PrivateKey;
+  let playerPublicKey: PublicKey, playerPrivateKey: PrivateKey, zkAppAddress: PublicKey, zkAppPrivateKey: PrivateKey;
 
   beforeEach(async () => {
     let Local = Mina.LocalBlockchain({ proofsEnabled: false });
     Mina.setActiveInstance(Local);
-    [{ publicKey: playerPublicKey, privateKey: playerPrivateKey }] =
-      Local.testAccounts;
+    [{ publicKey: playerPublicKey, privateKey: playerPrivateKey }] = Local.testAccounts;
     zkAppPrivateKey = PrivateKey.random();
     zkAppAddress = zkAppPrivateKey.toPublicKey();
   });
@@ -84,9 +62,7 @@ describe('meowHero', () => {
       const meow2 = meowList[y];
       const path1 = new LegionMerkleWitness(tree.getWitness(BigInt(x)));
       const path2 = new LegionMerkleWitness(tree.getWitness(BigInt(y)));
-      const babyPath = new LegionMerkleWitness(
-        tree.getWitness(BigInt(meowList.length))
-      );
+      const babyPath = new LegionMerkleWitness(tree.getWitness(BigInt(meowList.length)));
       const seed = zkApp.seed.get();
       const baby = combineMeow(meow1, meow2, seed);
       tree.setLeaf(BigInt(meowList.length), baby.hash());

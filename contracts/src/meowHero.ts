@@ -5,35 +5,12 @@ const FLAG = 111111;
 const LEGION_TREE_HEIGHT = 10;
 const INIT_POINT = 1;
 const MAX_POINT = 3;
-const LEGION_ROOT =
-  21437966668462597419531228685056711434672956253044931657149388835408624663326n;
+const LEGION_ROOT = 21437966668462597419531228685056711434672956253044931657149388835408624663326n;
 const SEED = 1938301114479194655n;
 
-import {
-  Field,
-  State,
-  SmartContract,
-  state,
-  method,
-  MerkleWitness,
-  Poseidon,
-  UInt64,
-  Struct,
-  Provable,
-  Bool,
-} from 'snarkyjs';
+import { Field, State, SmartContract, state, method, MerkleWitness, Poseidon, UInt64, Struct, Provable, Bool } from 'snarkyjs';
 
-export {
-  Meow,
-  MeowHeroContract,
-  LegionMerkleWitness,
-  LEGION_TREE_HEIGHT,
-  LEGION_ROOT,
-  MAX_POINT,
-  INIT_POINT,
-  SEED,
-  combineMeow,
-};
+export { Meow, MeowHeroContract, LegionMerkleWitness, LEGION_TREE_HEIGHT, LEGION_ROOT, MAX_POINT, INIT_POINT, SEED, combineMeow };
 
 class LegionMerkleWitness extends MerkleWitness(LEGION_TREE_HEIGHT) {}
 
@@ -55,30 +32,19 @@ class Meow extends Struct({
         this.magic.equals(UInt64.from(MAX_POINT)),
         Bool.and(
           this.speed.equals(UInt64.from(MAX_POINT)),
-          Bool.and(
-            this.lucky.equals(UInt64.from(MAX_POINT)),
-            this.charm.equals(UInt64.from(MAX_POINT))
-          )
+          Bool.and(this.lucky.equals(UInt64.from(MAX_POINT)), this.charm.equals(UInt64.from(MAX_POINT)))
         )
       )
     );
   }
 
   total(): UInt64 {
-    return this.power
-      .add(this.magic)
-      .add(this.speed)
-      .add(this.lucky)
-      .add(this.charm);
+    return this.power.add(this.magic).add(this.speed).add(this.lucky).add(this.charm);
   }
 
   totalNum(): number {
     return Number(
-      this.power.toBigInt() +
-        this.magic.toBigInt() +
-        this.speed.toBigInt() +
-        this.lucky.toBigInt() +
-        this.charm.toBigInt()
+      this.power.toBigInt() + this.magic.toBigInt() + this.speed.toBigInt() + this.lucky.toBigInt() + this.charm.toBigInt()
     );
   }
 
@@ -109,13 +75,7 @@ class MeowHeroContract extends SmartContract {
     this.seed.set(Field(SEED));
   }
 
-  @method breed(
-    meow1: Meow,
-    path1: LegionMerkleWitness,
-    meow2: Meow,
-    path2: LegionMerkleWitness,
-    babyPath: LegionMerkleWitness
-  ) {
+  @method breed(meow1: Meow, path1: LegionMerkleWitness, meow2: Meow, path2: LegionMerkleWitness, babyPath: LegionMerkleWitness) {
     // check parents existence
     const root = this.legionRoot.get();
     this.legionRoot.assertEquals(root);
@@ -139,11 +99,7 @@ class MeowHeroContract extends SmartContract {
     const meow = combineMeow(meow1, meow2, seed);
 
     // calculate and update new seed
-    const newseed = Poseidon.hash([
-      seed,
-      path1.calculateIndex(),
-      path2.calculateIndex(),
-    ]);
+    const newseed = Poseidon.hash([seed, path1.calculateIndex(), path2.calculateIndex()]);
     this.seed.set(newseed);
 
     // store to merkle tree
@@ -187,11 +143,7 @@ function divMod(x: Field, y: bigint): { quotient: Field; rest: Field } {
   };
 }
 
-function combineAttr(
-  attr1: UInt64,
-  attr2: UInt64,
-  seed: Field
-): { attr: UInt64; seed: Field } {
+function combineAttr(attr1: UInt64, attr2: UInt64, seed: Field): { attr: UInt64; seed: Field } {
   const { quotient: newseed, rest } = divMod(seed, 3n);
 
   const r = UInt64.from(rest);
@@ -211,11 +163,7 @@ function combineAttr(
   const newattr = Provable.if(
     q.lessThan(UInt64.from(INIT_POINT)),
     UInt64.from(INIT_POINT),
-    Provable.if(
-      q.greaterThan(UInt64.from(MAX_POINT)),
-      UInt64.from(MAX_POINT),
-      q
-    )
+    Provable.if(q.greaterThan(UInt64.from(MAX_POINT)), UInt64.from(MAX_POINT), q)
   );
 
   return { attr: newattr, seed: newseed };

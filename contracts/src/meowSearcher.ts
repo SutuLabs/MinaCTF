@@ -12,12 +12,7 @@ interface StackItem {
   commands: [number, number][];
 }
 
-function combine(
-  list: Meow[],
-  choice: [number, number],
-  seed: Field,
-  commands: [number, number][]
-): StackItem {
+function combine(list: Meow[], choice: [number, number], seed: Field, commands: [number, number][]): StackItem {
   if (choice[0] == -1 && choice[1] == -1) {
     choice[0] = list.length - 2;
     choice[1] = list.length - 1;
@@ -89,12 +84,7 @@ function getNext(item: StackItem): StackItem | undefined {
     break;
   }
 
-  return combine(
-    list,
-    [x, y],
-    seedBefore,
-    commands.slice(0, commands.length - 1)
-  );
+  return combine(list, [x, y], seedBefore, commands.slice(0, commands.length - 1));
 }
 
 function getRank(item: StackItem): number {
@@ -116,17 +106,13 @@ export function searchMeow(list: Meow[], seed: Field): [number, number][] {
     if (isConsoleLog) {
       count++;
       if (count % 100 == 0) {
-        console.log(
-          `[${new Date().toLocaleTimeString()}]looping in ${count} rounds, stack size: ${
-            stack.length
-          }`
-        );
+        console.log(`[${new Date().toLocaleTimeString()}]looping in ${count} rounds, stack size: ${stack.length}`);
       }
       const rank = getRank(item);
       if (rank > max) {
-        const msg = `[${new Date().toLocaleTimeString()}]new record reached: ${getRank(
-          item
-        )} ${JSON.stringify(commands)} : ${baby} : ${seed}`;
+        const msg = `[${new Date().toLocaleTimeString()}]new record reached: ${getRank(item)} ${JSON.stringify(
+          commands
+        )} : ${baby} : ${seed}`;
         console.log(msg);
         max = rank;
       }

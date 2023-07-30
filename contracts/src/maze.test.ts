@@ -21,16 +21,12 @@ const defMaze = serializeToMaze(
 // console.log(defMaze.maze, defMaze.start, defMaze.end);
 
 describe('maze', () => {
-  let playerPublicKey: PublicKey,
-    playerPrivateKey: PrivateKey,
-    zkAppAddress: PublicKey,
-    zkAppPrivateKey: PrivateKey;
+  let playerPublicKey: PublicKey, playerPrivateKey: PrivateKey, zkAppAddress: PublicKey, zkAppPrivateKey: PrivateKey;
 
   beforeEach(async () => {
     let Local = Mina.LocalBlockchain({ proofsEnabled: false });
     Mina.setActiveInstance(Local);
-    [{ publicKey: playerPublicKey, privateKey: playerPrivateKey }] =
-      Local.testAccounts;
+    [{ publicKey: playerPublicKey, privateKey: playerPrivateKey }] = Local.testAccounts;
     zkAppPrivateKey = PrivateKey.random();
     zkAppAddress = zkAppPrivateKey.toPublicKey();
   });
@@ -54,12 +50,7 @@ describe('maze', () => {
     new Maze(m, p, e).printState();
 
     // move
-    const moves = [
-      Direction.Down,
-      Direction.Right,
-      Direction.Right,
-      Direction.Right,
-    ];
+    const moves = [Direction.Down, Direction.Right, Direction.Right, Direction.Right];
     for (let i = 0; i < moves.length; i++) {
       const move = moves[i];
       txn = await Mina.transaction(playerPublicKey, async () => {
@@ -77,11 +68,7 @@ describe('maze', () => {
         const f = zkApp.flag.get();
         if (f.equals(0)) {
           // print maze when last move is not success
-          new Maze(
-            zkApp.maze.get(),
-            zkApp.position.get(),
-            zkApp.end.get()
-          ).printState();
+          new Maze(zkApp.maze.get(), zkApp.position.get(), zkApp.end.get()).printState();
         }
         f.assertGreaterThan(0);
         console.log('flag:', f.toBigInt());

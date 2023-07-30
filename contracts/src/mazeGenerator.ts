@@ -48,10 +48,7 @@ export function serializeToMaze(maze: string): MazeEntity {
     }
   }
 
-  const fm = m.reduce(
-    (pv, cv) => ({ total: pv.total + pv.acc * BigInt(cv), acc: pv.acc * 2n }),
-    { total: 0n, acc: 1n }
-  );
+  const fm = m.reduce((pv, cv) => ({ total: pv.total + pv.acc * BigInt(cv), acc: pv.acc * 2n }), { total: 0n, acc: 1n });
 
   return {
     start,
