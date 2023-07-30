@@ -1,14 +1,8 @@
 /**
  * This file defines the `Maze` smart contract and the helpers it needs.
  */
-const FLAG = 111111;
-const MAZE_WIDTH = 23;
-const MAZE_HEIGHT = 11;
-const MAZE_ENCODED = 14474010291946539611267177320239696521019383011430005103960479183690704879615n;
-const MAZE_START = 26;
-const MAZE_END = 52;
-
 import { Field, State, SmartContract, state, method, Bool, Circuit } from 'snarkyjs';
+import { MAZE_WIDTH, MAZE_HEIGHT, MAZE_ENCODED, MAZE_START, MAZE_END, FLAG } from './constants';
 
 export { Maze, MazeContract };
 
