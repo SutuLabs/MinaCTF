@@ -26,7 +26,18 @@ const genesisMeow = new Meow({
   charm: UInt64.from(INIT_POINT),
 });
 const meowList = [genesisMeow, genesisMeow];
-const enableSearchSolution = false;
+const enableSearchSolution = true;
+
+// for max 5
+let moves = JSON.parse(
+  '[[0,1],[1,2],[0,1],[0,4],[4,5],[5,6],[3,7],[5,6],[8,9],[8,10],[7,8],[9,12],[11,12],[11,13],[14,15],[13,16],[16,17],[17,18],[16,18],[18,20],[18,19],[21,22]]'
+);
+
+// find solution
+if (enableSearchSolution) {
+  moves = searchMeow(meowList, Field(SEED));
+  console.log('solution', JSON.stringify(moves));
+}
 
 describe('meowHero', () => {
   let playerPublicKey: PublicKey,
@@ -62,33 +73,6 @@ describe('meowHero', () => {
 
     expect(zkApp.legionRoot.get()).toEqual(tree.getRoot());
 
-    let moves = [
-      [0, 1],
-      [1, 2],
-      [0, 2],
-      [0, 4],
-      [0, 2],
-      [5, 6],
-      [5, 6],
-      [7, 8],
-      [6, 8],
-      [7, 9],
-      [9, 11],
-      [7, 12],
-      [8, 12],
-      [12, 13],
-      [14, 15],
-      [15, 16],
-      [16, 17],
-      [16, 17],
-    ];
-
-    // find solution
-    if (enableSearchSolution) {
-      moves = searchMeow(meowList, Field(SEED));
-      console.log('solution', JSON.stringify(moves));
-    }
-
     // execute solution of breeding on contract
     for (let i = 0; i < moves.length; i++) {
       const [x, y] = moves[i];
@@ -107,8 +91,10 @@ describe('meowHero', () => {
       console.log(
         'work on move',
         [x, y],
-        JSON.stringify(meow1),
-        JSON.stringify(meow2)
+        meow1.toString(),
+        meow2.toString(),
+        baby.toString(),
+        seed.toBigInt()
       );
       txn = await Mina.transaction(playerPublicKey, async () => {
         zkApp.breed(meow1, path1, meow2, path2, babyPath);
@@ -116,16 +102,26 @@ describe('meowHero', () => {
       await txn.prove();
       await txn.sign([playerPrivateKey]).send();
 
-      if (i < moves.length - 1) {
-        // before last move, the flag keep empty(zero)
-        const f = zkApp.flag.get();
-        f.assertEquals(0);
-      } else {
-        // when last move is success, get the right flag
-        const f = zkApp.flag.get();
-        f.assertGreaterThan(0);
-        console.log('flag:', f.toBigInt());
-      }
+      // before capture, the flag keep empty(zero)
+      const f = zkApp.flag.get();
+      f.assertEquals(0);
+    }
+
+    {
+      const x = meowList.length - 1;
+      const meow = meowList[x];
+      console.log('capture meow: ', JSON.stringify(meow));
+      const path = new LegionMerkleWitness(tree.getWitness(BigInt(x)));
+      txn = await Mina.transaction(playerPublicKey, async () => {
+        zkApp.capture(meow, path);
+      });
+      await txn.prove();
+      await txn.sign([playerPrivateKey]).send();
+
+      // when capture is success, get the right flag
+      const f = zkApp.flag.get();
+      f.assertGreaterThan(0);
+      console.log('flag:', f.toBigInt());
     }
   });
 });

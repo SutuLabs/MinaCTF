@@ -4,7 +4,7 @@
 const FLAG = 111111;
 const LEGION_TREE_HEIGHT = 10;
 const INIT_POINT = 1;
-const MAX_POINT = 4;
+const MAX_POINT = 5;
 const LEGION_ROOT =
   21437966668462597419531228685056711434672956253044931657149388835408624663326n;
 const SEED = 1938301114479194655n;
@@ -82,6 +82,10 @@ class Meow extends Struct({
         this.charm.toBigInt()
     );
   }
+
+  toString() {
+    return `${this.power}${this.magic}${this.speed}${this.lucky}${this.charm}`;
+  }
 }
 
 class MeowHeroContract extends SmartContract {
@@ -136,6 +140,12 @@ class MeowHeroContract extends SmartContract {
     const meow = combineMeow(meow1, meow2, seed);
 
     // calculate and update new seed
+    // console.log(
+    //   'seed',
+    //   seed.toBigInt(),
+    //   path1.calculateIndex().toBigInt(),
+    //   path2.calculateIndex().toBigInt()
+    // );
     const newseed = Poseidon.hash([
       seed,
       path1.calculateIndex(),
@@ -170,13 +180,14 @@ class MeowHeroContract extends SmartContract {
 }
 
 function divMod(x: Field, y: bigint): { quotient: Field; rest: Field } {
-  const xn = x.toBigInt();
+  // const xn = x.toBigInt();
   const yn = y;
-  const q = xn / yn;
-  const r = xn - q * yn;
-
-  const quotient = Field(q);
-  const rest = Field(r);
+  // const q = xn / yn;
+  // const r = xn - q * yn;
+  const q = Provable.witness(Field, () => new Field(x.toBigInt() / y));
+  const r = x.sub(q.mul(y));
+  const quotient = q;
+  const rest = r;
 
   quotient.mul(Field(yn)).add(rest).assertEquals(x);
   rest.assertLessThan(Field(yn));

@@ -6,7 +6,8 @@ interface StackItem {
   list: Meow[];
   baby: Meow;
   choice: [number, number];
-  seed: Field;
+  seedBefore: Field;
+  seedAfter: Field;
   commands: [number, number][];
 }
 
@@ -23,13 +24,27 @@ function combine(
   const m1 = list[choice[0]];
   const m2 = list[choice[1]];
   const baby = combineMeow(m1, m2, seed);
-  const newseed = Poseidon.hash([seed, Field(choice[0]), Field(choice[1])]);
+  const seedAfter = Poseidon.hash([seed, Field(choice[0]), Field(choice[1])]);
+  //   console.log(
+  //     'seed',
+  //     seed.toBigInt(),
+  //     choice[0],
+  //     choice[1],
+  //     seedAfter.toBigInt()
+  //   );
 
-  return { list, baby, choice, seed: newseed, commands: [...commands, choice] };
+  return {
+    list,
+    baby,
+    choice,
+    seedBefore: seed,
+    seedAfter,
+    commands: [...commands, choice],
+  };
 }
 
 function getNext(item: StackItem): StackItem | undefined {
-  const { choice, list, seed, commands } = item;
+  const { choice, list, seedBefore, commands } = item;
   // iterate backward from last meow
   /*
 
@@ -80,7 +95,12 @@ function getNext(item: StackItem): StackItem | undefined {
     break;
   }
 
-  return combine(list, [x, y], seed, commands.slice(0, commands.length - 1));
+  return combine(
+    list,
+    [x, y],
+    seedBefore,
+    commands.slice(0, commands.length - 1)
+  );
 }
 
 function getRank(item: StackItem): number {
@@ -96,7 +116,7 @@ export function searchMeow(list: Meow[], seed: Field): [number, number][] {
   while (stack.length) {
     const item = stack.pop();
     if (!item) continue;
-    const { baby, choice, seed, list, commands } = item;
+    const { baby, choice, seedAfter: seed, list, commands } = item;
     count++;
     if (count % 100 == 0) {
       console.log(
@@ -109,13 +129,13 @@ export function searchMeow(list: Meow[], seed: Field): [number, number][] {
     if (rank > max) {
       const msg = `[${new Date().toLocaleTimeString()}]new record reached: ${getRank(
         item
-      )} ${JSON.stringify(commands)} : ${JSON.stringify(baby)} : ${seed}`;
+      )} ${JSON.stringify(commands)} : ${baby} : ${seed}`;
       console.log(msg);
       max = rank;
     }
 
     // detect target reached
-    if (baby.isMax().toBoolean()) return [...commands, choice];
+    if (baby.isMax().toBoolean()) return commands;
     if (commands.length > 30) continue;
 
     // add vertical (go deeper)
