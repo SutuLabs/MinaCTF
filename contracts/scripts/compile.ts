@@ -5,6 +5,7 @@ import { CheckinContract } from '../src/checkin.js';
 import { MazeContract } from '../src/maze.js';
 import { PrimeContract } from '../src/prime.js';
 import { VerifierContract } from '../src/verifier.js';
+import { MeowHeroContract } from '../src/meowHero.js';
 
 const filename = process.argv[2] ?? 'vkey.json';
 const target = process.argv[3] ?? 'checkin';
@@ -12,10 +13,7 @@ const target = process.argv[3] ?? 'checkin';
 const d = fs.readFileSync(filename).toString();
 const vkey = JSON.parse(d);
 
-if (
-  ['all', 'checkin', 'maze', 'prime', 'verifier'].filter((_) => _ == target)
-    .length == 0
-) {
+if (['all', 'checkin', 'maze', 'prime', 'verifier', 'meowhero'].filter((_) => _ == target).length == 0) {
   throw new Error(`Unknown target: ${target}`);
 }
 
@@ -39,6 +37,11 @@ if (target == 'all' || target == cname) {
 cname = 'verifier';
 if (target == 'all' || target == cname) {
   vkey[cname] = await compile(cname, () => VerifierContract.compile());
+}
+
+cname = 'meowhero';
+if (target == 'all' || target == cname) {
+  vkey[cname] = await compile(cname, () => MeowHeroContract.compile());
 }
 
 let data = JSON.stringify(vkey, null, 4);
