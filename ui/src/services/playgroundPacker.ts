@@ -10,6 +10,8 @@ import checkinStr from 'app/../contracts/src/checkin.ts?raw';
 import mazeStr from 'app/../contracts/src/maze.ts?raw';
 import primeStr from 'app/../contracts/src/prime.ts?raw';
 import verifierStr from 'app/../contracts/src/verifier.ts?raw';
+import meowHeroStr from 'app/../contracts/src/meowHero.ts?raw';
+import { constructConstantsContent } from './files/constants';
 
 export async function packPlaygroundProject(
   contract: string,
@@ -31,7 +33,11 @@ export async function packPlaygroundProject(
       ? primeStr
       : contract == 'verifer'
       ? verifierStr
+      : contract == 'meowhero'
+      ? meowHeroStr
       : '';
+
+  const constantsContent = constructConstantsContent(contract);
 
   zip.file(
     'src/run.ts',
@@ -43,6 +49,7 @@ export async function packPlaygroundProject(
       )
   );
   zip.file('src/contract.ts', contractContent);
+  zip.file('src/constants.ts', constantsContent);
   zip.file('.env', `PRIVATE_KEY=\nCONTRACT_ID=${contractId}`);
   zip.file('.gitignore', gitignoreStr);
   zip.file('package.json', packageStr);

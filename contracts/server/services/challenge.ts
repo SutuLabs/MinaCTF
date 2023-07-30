@@ -6,14 +6,10 @@ import { PrimeContract } from '../../src/prime.js';
 import { VerifierContract } from '../../src/verifier.js';
 import { authenticate, getContractTx, num2Arr, tryGetAccount } from './utils';
 import PocketBase from 'pocketbase';
-import {
-  StartRequest,
-  StartResponse,
-  CaptureRequest,
-  CaptureResponse,
-} from './model';
+import { StartRequest, StartResponse, CaptureRequest, CaptureResponse } from './model';
 import { challengeData as cdata } from '../challengeData';
 import vkeyraw from '../vkey.json' assert { type: 'json' };
+import { MeowHeroContract } from '../../src/meowHero.js';
 
 const vkey = vkeyraw as unknown as {
   [key: string]: {
@@ -22,11 +18,7 @@ const vkey = vkeyraw as unknown as {
   };
 };
 
-export async function createChallenge(
-  pb: PocketBase,
-  req: express.Request,
-  res: express.Response
-) {
+export async function createChallenge(pb: PocketBase, req: express.Request, res: express.Response) {
   try {
     const challengeName = req.params.challenge;
     const challenge = cdata[req.params.challenge];
@@ -43,9 +35,7 @@ export async function createChallenge(
 
     const r = req.body as StartRequest;
     const deployerPublicKey = PublicKey.fromBase58(r.auth.publicKey);
-    console.log(
-      `Creating challenge [${challengeName}] using [${deployerPublicKey.toBase58()}]`
-    );
+    console.log(`Creating challenge [${challengeName}] using [${deployerPublicKey.toBase58()}]`);
 
     const a = authenticate(r.auth);
     if (!a.success) {
@@ -89,6 +79,8 @@ export async function createChallenge(
         ? new PrimeContract(zkAppPublicKey)
         : challengeName == 'verifier'
         ? new VerifierContract(zkAppPublicKey)
+        : challengeName == 'meowhero'
+        ? new MeowHeroContract(zkAppPublicKey)
         : undefined;
     if (!zkapp) {
       res.status(400).send({
@@ -98,12 +90,7 @@ export async function createChallenge(
       return;
     }
 
-    const ctx = await getContractTx(
-      deployerPublicKey,
-      zkAppPrivateKey,
-      zkapp,
-      verificationKey
-    );
+    const ctx = await getContractTx(deployerPublicKey, zkAppPrivateKey, zkapp, verificationKey);
     if (!ctx.success || !ctx.tx) {
       res.status(500).send({ success: false, error: 'failed to generate tx' });
       return;
@@ -149,12 +136,7 @@ export async function createChallenge(
   }
 }
 
-export async function checkChallenge(
-  endpointUrl: string,
-  pb: PocketBase,
-  req: express.Request,
-  res: express.Response
-) {
+export async function checkChallenge(endpointUrl: string, pb: PocketBase, req: express.Request, res: express.Response) {
   try {
     const challenge = cdata[req.params.challenge];
     if (!challenge) {
@@ -166,10 +148,7 @@ export async function checkChallenge(
     const contractId = r.contractId;
 
     // check challenge status
-    let { account } = await fetchAccount(
-      { publicKey: contractId },
-      endpointUrl
-    );
+    let { account } = await fetchAccount({ publicKey: contractId }, endpointUrl);
     const state = account?.zkapp?.appState;
     const flagpos = challenge.flagPosition;
     const flagarr = state?.[flagpos]?.value?.[1];
@@ -187,9 +166,7 @@ export async function checkChallenge(
       score: challenge.point,
     });
 
-    console.log(
-      `Challenge complete by ${citem.publicKey}, contract id: ${contractId}`
-    );
+    console.log(`Challenge complete by ${citem.publicKey}, contract id: ${contractId}`);
     res.send({ success: true } as CaptureResponse);
   } catch (err) {
     console.warn(err);

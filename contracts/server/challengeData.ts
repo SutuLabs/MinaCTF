@@ -28,8 +28,8 @@ export const challengeData: { [key: string]: ChallengeEntity } = {
     title: 'Prime',
     caption: 'Elementary math',
     icon: 'calculate',
-    difficulty: 'medium',
-    point: 200,
+    difficulty: 'beginner',
+    point: 150,
     contractName: 'PrimeContract',
     parameterNumber: 2,
   },
@@ -54,6 +54,17 @@ export const challengeData: { [key: string]: ChallengeEntity } = {
     point: 300,
     contractName: 'MazeContract',
     parameterNumber: 1,
+  },
+  meowhero: {
+    flagPosition: 3,
+    flagNumber: 111111n,
+    title: 'Meow',
+    caption: 'Breed a meow hero',
+    icon: 'pets',
+    difficulty: 'expert',
+    point: 400,
+    contractName: 'MeowHeroContract',
+    parameterNumber: 5,
   },
 };
 
