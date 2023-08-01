@@ -1,43 +1,16 @@
 # MinaCTF
 
-## Web Platform Design
+**Play CTF game is a good way to practice your programming skills.**
 
-- Database
-  - UserChallengeTable
-    - publicKey
-    - challengeId
-    - contractId (zkapp publicKey)
-    - startTime
-    - captureTime
-    - score
-- Backend
-  - start a challenge: POST /api/:challenge
-    - request: { payerPk: base58(string), auth: { pk: string, signature: {field: string, scalar: string}, message: string } }
-    - response: { tx: object, contractId: base58(string) }
-  - submit the flag: PUT /api/:challenge
-    - request: { publicKey: string }
-    - response: { success: boolean }
-  - challenge status: GET /api/:publicKey
-    - response: { publicKey: base58(string), challenges: { contractId: string, score: number, startTime: number, captureTime: number }[] }
-  - scores: GET /api/score/list
-    - response: { username: string, score: number }[]
-- Frontend
-  - Challenge
-    - List
-    - Guide page (include start and submit)
-  - Scoreboard
-    - List
+CTF (aka Capture The Flag) is a competition where teams or individuals have to solve a number of challenges. The one that solves/collects most flags the fastest wins the competition. Once each challenge has been solved successfully, the user will find a "flag" within the challenge that is proof of completion.
 
-## FAQ
+[Play Now](https://minactf.xyz/)
 
-### Is there a way to cache/skip compiling?
+## Structure
 
-TLDR: No
+- contracts: contracts and server code
+- ui: frontend representation
 
-REF:
+## License
 
-- [• Discord | "Is it possible to precompile a zkApp on client side?" | Mina Protocol](https://discord.com/channels/484437221055922177/1070570936799084554)
-- [• Discord | "is there a way to cache/skip compiling?" | Mina Protocol](https://discord.com/channels/484437221055922177/1105190653173960894/1105190653173960894)
-- [• Discord | "Cache compiled zkApp?" | Mina Protocol](https://discord.com/channels/484437221055922177/1047570237366751345/1047570237366751345)
-- [Restore prover keys · Issue #87 · o1-labs/snarkyjs](https://github.com/o1-labs/snarkyjs/issues/87)
-- [Unable to verify proof, without running compile on any contract first · Issue #427 · o1-labs/snarkyjs](https://github.com/o1-labs/snarkyjs/issues/427)
+[Apache-2.0](LICENSE)
