@@ -3,25 +3,25 @@ import { fetchAccount, Mina, PrivateKey, PublicKey, Field } from 'snarkyjs';
 import { CONTRACTNAME } from './contract.js';
 
 const endpointUrl =
-  process.env.ENDPOINT_URL ?? 'https://proxy.berkeley.minaexplorer.com/graphql';
+  penv.ENDPOINT_URL ?? 'https://proxy.berkeley.minaexplorer.com/graphql';
 const Berkeley = Mina.Network(endpointUrl);
 Mina.setActiveInstance(Berkeley);
 
 const deployTransactionFee = 100_000_000;
 
 await (async function run() {
-  if (!process.env.CONTRACT_ID) {
+  if (!penv.CONTRACT_ID) {
     console.log('set CONTRACT_ID in .env file first.');
     return;
   }
 
-  if (!process.env.PRIVATE_KEY) {
+  if (!penv.PRIVATE_KEY) {
     console.log('set PRIVATE_KEY in .env file first.');
     return;
   }
 
-  const zkAppPublicKey = PublicKey.fromBase58(process.env.CONTRACT_ID);
-  const deployerPrivateKey = PrivateKey.fromBase58(process.env.PRIVATE_KEY);
+  const zkAppPublicKey = PublicKey.fromBase58(penv.CONTRACT_ID);
+  const deployerPrivateKey = PrivateKey.fromBase58(penv.PRIVATE_KEY);
   const deployerPublicKey = deployerPrivateKey.toPublicKey();
   const zkapp = new CONTRACTNAME(zkAppPublicKey);
 
@@ -60,6 +60,7 @@ await (async function run() {
   await CONTRACTNAME.compile();
 
   console.log('Creating transaction for zkapp', zkAppPublicKey.toBase58());
+  /* COMPLEMENT_CODE */
   const transaction = await Mina.transaction(
     { sender: deployerPublicKey, fee: deployTransactionFee },
     () => {

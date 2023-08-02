@@ -42,10 +42,36 @@ export async function packPlaygroundProject(
   zip.file(
     'src/run.ts',
     runStr
+      .replaceAll(
+        '/* COMPLEMENT_CODE */\n',
+        contract == 'meowhero'
+          ? `
+  const genesisMeow = new Meow({
+    power: UInt64.from(INIT_POINT),
+    magic: UInt64.from(INIT_POINT),
+    speed: UInt64.from(INIT_POINT),
+    lucky: UInt64.from(INIT_POINT),
+    charm: UInt64.from(INIT_POINT),
+  });
+  const meowList = [genesisMeow, genesisMeow];
+  const tree = new MerkleTree(LEGION_TREE_HEIGHT);
+  tree.setLeaf(0n, genesisMeow.hash());
+  tree.setLeaf(1n, genesisMeow.hash());
+  const path1 = new LegionMerkleWitness(tree.getWitness(0n));
+  const path2 = new LegionMerkleWitness(tree.getWitness(1n));
+  const babyPath = new LegionMerkleWitness(tree.getWitness(BigInt(meowList.length)));
+`
+          : ''
+      )
+      .replaceAll('penv', 'process.env')
       .replaceAll('CONTRACTNAME', contractName)
       .replaceAll(
         'zkapp.play();',
-        `zkapp.play(${Array(c.parameterNumber).fill('Field(0)').join(', ')});`
+        contract == 'meowhero'
+          ? 'zkapp.breed(genesisMeow, path1, genesisMeow, path2, babyPath);'
+          : `zkapp.play(${Array(c.parameterNumber)
+              .fill('Field(0)')
+              .join(', ')});`
       )
   );
   zip.file('src/contract.ts', contractContent);
