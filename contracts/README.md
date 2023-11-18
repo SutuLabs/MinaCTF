@@ -17,6 +17,10 @@ npm run testw # watch mode
 npm run coverage
 ```
 
+## Dependencies
+
+- PocketBase 0.16.7
+
 ## License
 
 [Apache-2.0](LICENSE)
