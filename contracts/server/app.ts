@@ -7,6 +7,11 @@ import PocketBase from 'pocketbase';
 import { checkChallenge, createChallenge } from './services/challenge';
 import { getPkChallenges, getScoreList } from './services/score';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(BigInt.prototype as any).toJSON = function () {
+  return this.toString();
+};
+
 const pbUrl = process.env.PB_EP_URL;
 const pbUsername = process.env.PB_USERNAME;
 const pbPassword = process.env.PB_PASSWORD;

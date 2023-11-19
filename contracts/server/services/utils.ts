@@ -1,5 +1,6 @@
-import { PublicKey, fetchAccount, PrivateKey, Field, Mina, AccountUpdate, SmartContract, Types } from 'o1js';
+import { PublicKey, PrivateKey, Field, Mina, AccountUpdate, SmartContract } from 'o1js';
 import { AuthEntity } from './model';
+import { fetchAccount, FetchedAccount } from '../../utils/fetchAccount';
 
 const { default: Signer } = await import('mina-signer');
 
@@ -14,11 +15,11 @@ export async function tryGetAccount({
 }: {
   account: PublicKey;
   isZkAppAccount: boolean;
-}): Promise<Types.Account | undefined> {
-  let response = await fetchAccount({ publicKey: account }, endpointUrl);
+}): Promise<FetchedAccount | undefined> {
+  let response = await fetchAccount({ publicKey: account.toBase58() }, endpointUrl);
   let accountExists = response.account !== undefined;
   if (isZkAppAccount) {
-    accountExists = response.account?.zkapp?.appState !== undefined;
+    accountExists = response.account?.zkappState !== undefined;
   }
   return accountExists ? response.account : undefined;
 }
@@ -34,8 +35,8 @@ export async function getContractTx(
 
   console.log('using zkApp private key with public key', zkAppPublicKey.toBase58());
 
-  let { account } = await fetchAccount({ publicKey: zkAppPublicKey }, endpointUrl);
-  let isDeployed = account?.zkapp?.verificationKey !== undefined;
+  let { account } = await fetchAccount({ publicKey: zkAppPublicKey.toBase58() }, endpointUrl);
+  let isDeployed = account?.verificationKey !== undefined;
 
   if (isDeployed) {
     console.log('zkApp for public key', zkAppPublicKey.toBase58(), 'found deployed');
