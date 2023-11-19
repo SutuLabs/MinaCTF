@@ -19,7 +19,7 @@
     "build:docker": "docker build -f Dockerfile -t wizicer/ctf-server:latest .",
     "publish:docker": "docker push wizicer/ctf-server:latest",
     "dev": "nodemon server/server.ts",
-    "compile": "ts-node scripts/compile.ts server/vkey.json",
+    "compile": "ts-node scripts/compile.ts server/vkey.json all",
     "coverage": "node --experimental-vm-modules --experimental-wasm-threads node_modules/jest/bin/jest.js --coverage",
     "format": "prettier --write --ignore-unknown **/*",
     "test": "node --experimental-vm-modules --experimental-wasm-threads node_modules/jest/bin/jest.js --verbose",
