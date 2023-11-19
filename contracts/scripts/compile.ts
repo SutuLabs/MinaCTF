@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { Field } from 'snarkyjs';
+import { Field } from 'o1js';
 import '../server/config';
 
 import { CheckinContract } from '../src/checkin.js';

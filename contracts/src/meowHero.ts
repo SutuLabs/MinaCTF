@@ -1,7 +1,7 @@
 /**
  * This file defines the `MeowHero` smart contract and the helpers it needs.
  */
-import { Field, State, SmartContract, state, method, MerkleWitness, Poseidon, UInt64, Struct, Provable, Bool } from 'snarkyjs';
+import { Field, State, SmartContract, state, method, MerkleWitness, Poseidon, UInt64, Struct, Provable, Bool } from 'o1js';
 import { LEGION_TREE_HEIGHT, MAX_POINT, LEGION_ROOT, SEED, FLAG, INIT_POINT } from './constants';
 
 export { Meow, MeowHeroContract, LegionMerkleWitness, combineMeow };

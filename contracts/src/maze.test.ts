@@ -1,5 +1,5 @@
 import { Maze, MazeContract } from './maze';
-import { Field, PrivateKey, PublicKey, Mina, AccountUpdate } from 'snarkyjs';
+import { Field, PrivateKey, PublicKey, Mina, AccountUpdate } from 'o1js';
 
 import { Direction, serializeToMaze } from './mazeGenerator';
 

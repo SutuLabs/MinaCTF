@@ -1,6 +1,6 @@
 import './config';
 import express from 'express';
-import { Mina } from 'snarkyjs';
+import { Mina } from 'o1js';
 import cors from 'cors';
 import PocketBase from 'pocketbase';
 // import 'cross-fetch/polyfill';

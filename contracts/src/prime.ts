@@ -1,7 +1,7 @@
 /**
  * This file defines the `Prime` smart contract and the helpers it needs.
  */
-import { Field, State, SmartContract, state, method, Circuit } from 'snarkyjs';
+import { Field, State, SmartContract, state, method, Circuit } from 'o1js';
 import { NUMBER, FLAG } from './constants';
 
 export { PrimeContract };

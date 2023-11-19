@@ -1,5 +1,5 @@
 import express from 'express';
-import { fetchAccount, PrivateKey, PublicKey, SmartContract } from 'snarkyjs';
+import { fetchAccount, PrivateKey, PublicKey, SmartContract } from 'o1js';
 import { CheckinContract } from '../../src/checkin.js';
 import { MazeContract } from '../../src/maze.js';
 import { PrimeContract } from '../../src/prime.js';

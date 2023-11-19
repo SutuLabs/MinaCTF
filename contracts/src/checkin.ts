@@ -1,7 +1,7 @@
 /**
  * This file defines the `Checkin` smart contract and the helpers it needs.
  */
-import { Field, State, SmartContract, state, method } from 'snarkyjs';
+import { Field, State, SmartContract, state, method } from 'o1js';
 import { FLAG } from './constants';
 
 export { CheckinContract };
