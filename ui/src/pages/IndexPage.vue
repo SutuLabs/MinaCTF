@@ -17,6 +17,16 @@
     </p>
 
     <p class="q-ma-md">
+      Visit this
+      <a
+        href="https://twitter.com/icerdesign/status/1689286599823986689"
+        target="_blank"
+        >link</a
+      >
+      for a comprehensive demonstration of the entire process.
+    </p>
+
+    <p class="q-ma-md">
       <q-btn to="/challenges" label="Start" icon="flag" color="primary" push />
       <q-btn
         to="/scoreboard"
