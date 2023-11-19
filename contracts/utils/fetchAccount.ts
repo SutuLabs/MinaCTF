@@ -6,7 +6,7 @@ type FetchError = {
 type AuthRequired = 'Signature' | 'Proof' | 'Either' | 'None' | 'Impossible';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type FetchResponse = { data: any; errors?: any };
-type FetchedAccount = {
+export type FetchedAccount = {
   publicKey: string;
   token: string;
   nonce: string;
@@ -47,17 +47,13 @@ type FetchedAccount = {
 export async function fetchAccount(
   accountInfo: { publicKey: string; tokenId?: string },
   graphqlEndpoint: string
-): Promise<
-  | { account: FetchedAccount; error: undefined }
-  | { account: undefined; error: FetchError }
-> {
-  const tokenIdBase58 =
-    accountInfo.tokenId ?? 'wSHV2S4qX9jFsLjQo8r1BsMLH2ZRKsZx6EJd1sbozGPieEC4Jf';
+): Promise<{ account: FetchedAccount; error: undefined } | { account: undefined; error: FetchError }> {
+  const tokenIdBase58 = accountInfo.tokenId ?? 'wSHV2S4qX9jFsLjQo8r1BsMLH2ZRKsZx6EJd1sbozGPieEC4Jf';
 
   const req = {
     operationName: null,
     query: `{
-    account(publicKey: \"${accountInfo.publicKey}\", token: \"${tokenIdBase58}\") {
+    account(publicKey: "${accountInfo.publicKey}", token: "${tokenIdBase58}") {
       publicKey
       token
       nonce
@@ -110,16 +106,10 @@ export async function fetchAccount(
   });
 
   if (resp.status != 200) {
-    throw new Error(
-      'NETWORK_ERROR: ' +
-        resp.status.toString() +
-        '\nERROR: ' +
-        (await resp.text())
-    );
+    throw new Error('NETWORK_ERROR: ' + resp.status.toString() + '\nERROR: ' + (await resp.text()));
   }
 
-  const fetchedAccount = ((await resp.json()) as FetchResponse).data
-    .account as FetchedAccount | null;
+  const fetchedAccount = ((await resp.json()) as FetchResponse).data.account as FetchedAccount | null;
   if (!fetchedAccount) {
     return {
       account: undefined,
