@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { fetchAccount, Mina, PrivateKey, PublicKey, Field } from 'snarkyjs';
+import { fetchAccount, Mina, PrivateKey, PublicKey, Field } from 'o1js';
 import { CONTRACTNAME } from './contract.js';
 
 const endpointUrl =

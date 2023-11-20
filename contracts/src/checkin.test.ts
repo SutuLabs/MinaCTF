@@ -1,5 +1,5 @@
 import { CheckinContract } from './checkin';
-import { Field, PrivateKey, PublicKey, Mina, AccountUpdate } from 'snarkyjs';
+import { Field, PrivateKey, PublicKey, Mina, AccountUpdate } from 'o1js';
 
 describe('checkin', () => {
   let playerPublicKey: PublicKey, playerPrivateKey: PrivateKey, zkAppAddress: PublicKey, zkAppPrivateKey: PrivateKey;

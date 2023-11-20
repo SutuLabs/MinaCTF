@@ -2,7 +2,7 @@
   "version": 1,
   "deployAliases": {
     "bk": {
-      "url": "http://berkeley.mina.sutulabs.com/graphql",
+      "url": "https://proxy.berkeley.minaexplorer.com/",
       "keyPath": "keys/bk.json",
       "fee": "0.1",
       "smartContract": "MazeContract"

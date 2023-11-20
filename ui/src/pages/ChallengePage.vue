@@ -221,7 +221,7 @@
 
 <script setup lang="ts">
 import { QStepper, useQuasar } from 'quasar';
-import { fetchAccount } from '../services/fetchAccount';
+import { fetchAccount } from '../../../contracts/utils/fetchAccount';
 import * as contract from 'src/services/contract';
 import { ref, Ref } from 'vue';
 import { useRoute } from 'vue-router';

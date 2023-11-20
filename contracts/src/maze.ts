@@ -1,7 +1,7 @@
 /**
  * This file defines the `Maze` smart contract and the helpers it needs.
  */
-import { Field, State, SmartContract, state, method, Bool, Circuit } from 'snarkyjs';
+import { Field, State, SmartContract, state, method, Bool, Circuit } from 'o1js';
 import { MAZE_WIDTH, MAZE_HEIGHT, MAZE_ENCODED, MAZE_START, MAZE_END, FLAG } from './constants';
 
 export { Maze, MazeContract };

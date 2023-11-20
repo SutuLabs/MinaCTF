@@ -1,7 +1,7 @@
 /**
  * This file defines the `Verifier` smart contract and the helpers it needs.
  */
-import { Field, State, SmartContract, state, method, Circuit, PublicKey, Signature } from 'snarkyjs';
+import { Field, State, SmartContract, state, method, Circuit, PublicKey, Signature } from 'o1js';
 import { PUBLICKEY, PAYLOAD, FLAG } from './constants';
 
 export { VerifierContract };

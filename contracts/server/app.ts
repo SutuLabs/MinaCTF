@@ -1,11 +1,16 @@
 import './config';
 import express from 'express';
-import { Mina } from 'snarkyjs';
+import { Mina } from 'o1js';
 import cors from 'cors';
 import PocketBase from 'pocketbase';
 // import 'cross-fetch/polyfill';
 import { checkChallenge, createChallenge } from './services/challenge';
 import { getPkChallenges, getScoreList } from './services/score';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(BigInt.prototype as any).toJSON = function () {
+  return this.toString();
+};
 
 const pbUrl = process.env.PB_EP_URL;
 const pbUsername = process.env.PB_USERNAME;

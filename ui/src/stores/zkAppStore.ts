@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { PublicKey, Field } from 'snarkyjs';
+import { PublicKey, Field } from 'o1js';
 
 export const useZkAppStore = defineStore('zkApp', {
   state: () => ({

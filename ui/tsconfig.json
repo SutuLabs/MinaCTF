@@ -7,5 +7,6 @@
     "./src",
     "../contracts/server/challengeData.ts",
     "../contracts/server/model.ts",
+    "../contracts/utils/fetchAccount.ts",
   ],
 }

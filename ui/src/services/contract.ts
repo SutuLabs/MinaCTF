@@ -26,7 +26,10 @@ export async function deploy(
   const publicKeyBase58: string = (await mina.requestAccounts())[0];
 
   const network = await mina.requestNetwork();
-  if (network != 'Berkeley') {
+  if (
+    (typeof network === 'string' && network != 'Berkeley') ||
+    (typeof network === 'object' && network.chainId != 'berkeley')
+  ) {
     throw new Error(
       'Only support Berkeley network now, please switch network first!'
     );

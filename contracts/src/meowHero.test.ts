@@ -1,5 +1,5 @@
 import { Meow, MeowHeroContract, LegionMerkleWitness, combineMeow } from './meowHero';
-import { Field, PrivateKey, PublicKey, Mina, AccountUpdate, MerkleTree, UInt64 } from 'snarkyjs';
+import { Field, PrivateKey, PublicKey, Mina, AccountUpdate, MerkleTree, UInt64 } from 'o1js';
 import { searchMeow } from './meowSearcher';
 import { INIT_POINT, SEED, LEGION_TREE_HEIGHT } from './constants';
 

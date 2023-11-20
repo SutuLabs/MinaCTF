@@ -1,6 +1,6 @@
 import { NUMBER } from './constants';
 import { PrimeContract } from './prime';
-import { Field, PrivateKey, PublicKey, Mina, AccountUpdate } from 'snarkyjs';
+import { Field, PrivateKey, PublicKey, Mina, AccountUpdate } from 'o1js';
 
 describe('prime', () => {
   let playerPublicKey: PublicKey, playerPrivateKey: PrivateKey, zkAppAddress: PublicKey, zkAppPrivateKey: PrivateKey;

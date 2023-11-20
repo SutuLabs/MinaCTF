@@ -11,7 +11,7 @@ yarn
 ### Start the app in development mode (hot-code reloading, error reporting, etc.)
 
 ```bash
-yarn serve
+yarn dev
 ```
 
 ### Lint the files

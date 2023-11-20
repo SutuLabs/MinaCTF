@@ -30,10 +30,16 @@ interface VerifyMessageArgs {
     scalar: string;
   };
 }
+type ChainInfoArgs = {
+  chainId: 'mainnet' | 'devnet' | 'berkeley' | 'testworld2';
+  name: string;
+};
 
 interface MinaWallet {
   requestAccounts(): Promise<string[]>;
-  requestNetwork(): Promise<'Mainnet' | 'Devnet' | 'Berkeley' | 'Unknown'>;
+  requestNetwork(): Promise<
+    'Mainnet' | 'Devnet' | 'Berkeley' | 'Unknown' | ChainInfoArgs
+  >;
   getAccounts(): Promise<string[]>;
 
   sendTransaction(args: SendTransactionArgs): Promise<{ hash: string }>;

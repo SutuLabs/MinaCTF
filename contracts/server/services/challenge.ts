@@ -1,15 +1,16 @@
 import express from 'express';
-import { fetchAccount, PrivateKey, PublicKey, SmartContract } from 'snarkyjs';
+import { PrivateKey, PublicKey, SmartContract } from 'o1js';
 import { CheckinContract } from '../../src/checkin.js';
 import { MazeContract } from '../../src/maze.js';
 import { PrimeContract } from '../../src/prime.js';
 import { VerifierContract } from '../../src/verifier.js';
-import { authenticate, getContractTx, num2Arr, tryGetAccount } from './utils';
+import { authenticate, getContractTx, tryGetAccount } from './utils';
 import PocketBase from 'pocketbase';
 import { StartRequest, StartResponse, CaptureRequest, CaptureResponse } from './model';
 import { challengeData as cdata } from '../challengeData';
 import vkeyraw from '../vkey.json' assert { type: 'json' };
 import { MeowHeroContract } from '../../src/meowHero.js';
+import { fetchAccount } from '../../utils/fetchAccount';
 
 const vkey = vkeyraw as unknown as {
   [key: string]: {
@@ -47,20 +48,23 @@ export async function createChallenge(pb: PocketBase, req: express.Request, res:
       return;
     }
 
-    // check deployer pk balance
-    let account = await tryGetAccount({
-      account: deployerPublicKey,
-      isZkAppAccount: false,
-    });
+    const isCheckAccountBalance = false; // this check can be disabled, UI part can do this instead.
+    if (isCheckAccountBalance) {
+      // check deployer pk balance
+      let account = await tryGetAccount({
+        account: deployerPublicKey,
+        isZkAppAccount: false,
+      });
 
-    if (!account) {
-      const msg =
-        'Deployer account does not exist. ' +
-        'Request funds at faucet https://berkeley.minaexplorer.com/faucet or ' +
-        'https://faucet.minaprotocol.com/?address=' +
-        deployerPublicKey.toBase58();
-      res.status(400).send(JSON.stringify({ success: false, error: msg }));
-      return;
+      if (!account) {
+        const msg =
+          'Deployer account does not exist. ' +
+          'Request funds at faucet https://berkeley.minaexplorer.com/faucet or ' +
+          'https://faucet.minaprotocol.com/?address=' +
+          deployerPublicKey.toBase58();
+        res.status(400).send(JSON.stringify({ success: false, error: msg }));
+        return;
+      }
     }
     // console.log(
     //   `Using fee payer account with nonce ${account.nonce}, balance ${account.balance}`
@@ -149,11 +153,17 @@ export async function checkChallenge(endpointUrl: string, pb: PocketBase, req: e
 
     // check challenge status
     let { account } = await fetchAccount({ publicKey: contractId }, endpointUrl);
-    const state = account?.zkapp?.appState;
+    if (account === undefined) {
+      res.send({ success: false, error: 'network issue, try again later' });
+      return;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const state = account?.zkappState;
     const flagpos = challenge.flagPosition;
-    const flagarr = state?.[flagpos]?.value?.[1];
-    const targetArr = num2Arr(challenge.flagNumber);
-    if (JSON.stringify(flagarr) != JSON.stringify(targetArr)) {
+    const flag = state?.[flagpos];
+
+    if (BigInt(flag ?? 0) != challenge.flagNumber) {
       res.send({ success: false, error: 'flag not caught yet' });
       return;
     }
@@ -169,7 +179,15 @@ export async function checkChallenge(endpointUrl: string, pb: PocketBase, req: e
     console.log(`Challenge complete by ${citem.publicKey}, contract id: ${contractId}`);
     res.send({ success: true } as CaptureResponse);
   } catch (err) {
+    if (err instanceof Error && err.message == 'fetch failed') {
+      res.send({
+        success: false,
+        error: 'network issue, please try again later',
+      });
+      return;
+    }
     console.warn(err);
+    if (err instanceof Error) console.log(err.message, err.name);
     res.status(500).send({
       success: false,
       error: err instanceof Error ? err.message : err,

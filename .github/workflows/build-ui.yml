@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "contracts/src/**"
+      - "contracts/utils/fetchAccount.ts"
       - "contracts/server/challengeData.ts"
       - "contracts/server/services/model.ts"
       - "ui/**"
@@ -15,6 +16,7 @@ on:
       - main
     paths:
       - "contracts/src/**"
+      - "contracts/utils/fetchAccount.ts"
       - "contracts/server/challengeData.ts"
       - "contracts/server/services/model.ts"
       - "ui/**"

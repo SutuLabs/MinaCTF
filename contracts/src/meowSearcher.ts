@@ -1,5 +1,5 @@
 import { Meow, combineMeow } from './meowHero';
-import { Field, Poseidon } from 'snarkyjs';
+import { Field, Poseidon } from 'o1js';
 const heuristicNumber = 10;
 const isConsoleLog = false;
 

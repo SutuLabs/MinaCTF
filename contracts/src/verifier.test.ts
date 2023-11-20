@@ -1,6 +1,6 @@
 import { PAYLOAD } from './constants';
 import { VerifierContract } from './verifier';
-import { Field, PrivateKey, PublicKey, Mina, AccountUpdate, Signature } from 'snarkyjs';
+import { Field, PrivateKey, PublicKey, Mina, AccountUpdate, Signature } from 'o1js';
 
 describe('verifier', () => {
   let playerPublicKey: PublicKey, playerPrivateKey: PrivateKey, zkAppAddress: PublicKey, zkAppPrivateKey: PrivateKey;

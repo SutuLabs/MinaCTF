@@ -1,22 +1,11 @@
-import { timeStamp } from 'console';
-import {
-  PublicKey,
-  fetchAccount,
-  PrivateKey,
-  Field,
-  Mina,
-  AccountUpdate,
-  SmartContract,
-  Types,
-} from 'snarkyjs';
+import { PublicKey, PrivateKey, Field, Mina, AccountUpdate, SmartContract } from 'o1js';
 import { AuthEntity } from './model';
+import { fetchAccount, FetchedAccount } from '../../utils/fetchAccount';
 
 const { default: Signer } = await import('mina-signer');
 
 const deployTransactionFee = 100_000_000;
-const endpointUrl =
-  process.env.VUE_APP_MINA_NETWORK ??
-  'https://proxy.berkeley.minaexplorer.com/graphql';
+const endpointUrl = process.env.VUE_APP_MINA_NETWORK ?? 'https://proxy.berkeley.minaexplorer.com/graphql';
 const Berkeley = Mina.Network(endpointUrl);
 Mina.setActiveInstance(Berkeley);
 
@@ -26,11 +15,11 @@ export async function tryGetAccount({
 }: {
   account: PublicKey;
   isZkAppAccount: boolean;
-}): Promise<Types.Account | undefined> {
-  let response = await fetchAccount({ publicKey: account }, endpointUrl);
+}): Promise<FetchedAccount | undefined> {
+  let response = await fetchAccount({ publicKey: account.toBase58() }, endpointUrl);
   let accountExists = response.account !== undefined;
   if (isZkAppAccount) {
-    accountExists = response.account?.zkapp?.appState !== undefined;
+    accountExists = response.account?.zkappState !== undefined;
   }
   return accountExists ? response.account : undefined;
 }
@@ -44,36 +33,23 @@ export async function getContractTx(
 ): Promise<{ success: boolean; tx?: string; error?: string }> {
   const zkAppPublicKey = zkAppPrivateKey.toPublicKey();
 
-  console.log(
-    'using zkApp private key with public key',
-    zkAppPublicKey.toBase58()
-  );
+  console.log('using zkApp private key with public key', zkAppPublicKey.toBase58());
 
-  let { account } = await fetchAccount(
-    { publicKey: zkAppPublicKey },
-    endpointUrl
-  );
-  let isDeployed = account?.zkapp?.verificationKey !== undefined;
+  let { account } = await fetchAccount({ publicKey: zkAppPublicKey.toBase58() }, endpointUrl);
+  let isDeployed = account?.verificationKey !== undefined;
 
   if (isDeployed) {
-    console.log(
-      'zkApp for public key',
-      zkAppPublicKey.toBase58(),
-      'found deployed'
-    );
+    console.log('zkApp for public key', zkAppPublicKey.toBase58(), 'found deployed');
     return { success: false, error: 'already deployed.' };
   }
   console.log('Deploying zkapp for public key', zkAppPublicKey.toBase58());
   Mina.setActiveInstance(Berkeley);
-  let transaction = await Mina.transaction(
-    { sender, fee: deployTransactionFee },
-    () => {
-      AccountUpdate.fundNewAccount(sender);
-      // NOTE: this calls `init()` if this is the first deploy
-      zkapp.deploy({ verificationKey, zkappKey: zkAppPrivateKey });
-      txInclude?.(zkapp);
-    }
-  );
+  let transaction = await Mina.transaction({ sender, fee: deployTransactionFee }, () => {
+    AccountUpdate.fundNewAccount(sender);
+    // NOTE: this calls `init()` if this is the first deploy
+    zkapp.deploy({ verificationKey, zkappKey: zkAppPrivateKey });
+    txInclude?.(zkapp);
+  });
   console.log('Proving transaction...');
   await transaction.prove();
 
@@ -106,27 +82,23 @@ export function authenticate(
       if (line.startsWith(timestampPrefix)) {
         const timestamp = Number(line.slice(timestampPrefix.length));
         const offset = Date.now() - timestamp;
-        if (isNaN(offset))
-          return { success: false, error: 'wrong timestamp format' };
+        if (isNaN(offset)) return { success: false, error: 'wrong timestamp format' };
 
         if (offset < 0) return { success: false, error: 'time from future' };
 
-        if (offset > secondsThreshold * 1000)
-          return { success: false, error: 'signature expired' };
+        if (offset > secondsThreshold * 1000) return { success: false, error: 'signature expired' };
 
         timestampVerified = true;
         break;
       }
     }
 
-    if (!timestampVerified)
-      return { success: false, error: 'timestamp not found' };
+    if (!timestampVerified) return { success: false, error: 'timestamp not found' };
   }
 
   let verifyResult;
   try {
-    const nextSignature =
-      typeof signature === 'string' ? JSON.parse(signature) : signature;
+    const nextSignature = typeof signature === 'string' ? JSON.parse(signature) : signature;
     const verifyBody = {
       data: verifyMessage,
       publicKey: publicKey,
