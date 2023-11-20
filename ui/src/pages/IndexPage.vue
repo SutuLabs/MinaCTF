@@ -26,7 +26,7 @@
       for a comprehensive demonstration of the entire process.
     </p>
 
-    <p class="q-ma-md">
+    <p class="q-ma-md full-width q-px-md">
       <q-btn to="/challenges" label="Start" icon="flag" color="primary" push />
       <q-btn
         to="/scoreboard"
